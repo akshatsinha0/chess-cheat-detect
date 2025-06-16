@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 import chess
 import chess.svg
+import io
 from PIL import Image, ImageTk
 from src.core.stockfish_engine import analyze_position
 from src.ml.anomaly_detector import AnomalyDetector
