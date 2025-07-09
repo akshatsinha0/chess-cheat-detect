@@ -1,5 +1,3 @@
-# src/ml/anomaly_detector.py
-
 import os
 import argparse
 import numpy as np
@@ -8,40 +6,53 @@ from tensorflow.keras import layers, models
 
 class AnomalyDetector:
     """
-    Loads a trained anomaly detection model and provides a method
-    to predict a cheating suspicion score between 0 and 1.
+    Loads a trained anomaly detection model and predicts a cheating
+    suspicion score between 0 and 1.
     """
     def __init__(self, model_path: str, threshold: float = 0.5):
-        """
-        Args:
-            model_path (str): Path to the saved TensorFlow model.
-            threshold (float): Score above which cheating is flagged.
-        """
         if not os.path.isfile(model_path):
-            raise IOError(f"Model file not found at {model_path}")
-        self.model = tf.keras.models.load_model(model_path)
+            raise IOError(f"Model file not found at {model_path}")  # Ensure model exists[1]
+        self.model = tf.keras.models.load_model(model_path)         # Load saved model[2]
         self.threshold = threshold
 
     @staticmethod
     def build_model(input_dim: int) -> tf.keras.Model:
-        """Constructs a simple neural network for anomaly detection."""
+        """
+        Constructs a simple feed-forward network for anomaly detection.
+        """
         model = models.Sequential([
-            layers.Input(shape=(input_dim,)),          # Single-feature input
-            layers.Dense(16, activation='relu'),
-            layers.Dense(8, activation='relu'),
-            layers.Dense(1, activation='sigmoid')
+            layers.Input(shape=(input_dim,), name="input_layer"),   # Modern Input API[3]
+            layers.Dense(16, activation="relu"),
+            layers.Dense(8, activation="relu"),
+            layers.Dense(1, activation="sigmoid")
         ])
-        model.compile(optimizer='adam',
-                      loss='binary_crossentropy',
-                      metrics=['accuracy'])
+        model.compile(optimizer="adam",
+                      loss="binary_crossentropy",
+                      metrics=["accuracy"])                            # Compile settings[4]
         return model
 
     def extract_features(self, fen: str, best_move: str, evaluation: dict) -> np.ndarray:
         """
-        Converts game data into a feature vector for the model.
+        Converts game data into a numerical feature vector.
+        For the basic model, we use simple features.
+        For advanced models, this should match the training feature set.
         """
-        eval_val = evaluation.get('value', 0)
-        norm = np.tanh(eval_val / 100.0)              # Normalize centipawn score[4]
+        # Basic feature extraction for compatibility
+        eval_val = evaluation.get("value", 0)
+        norm = np.tanh(eval_val / 100.0)  # Normalize centipawn score
+        
+        # If model expects more features, pad with zeros
+        # This ensures compatibility with both simple and advanced models
+        try:
+            expected_features = self.model.input_shape[1]
+            if expected_features > 1:
+                # Create a feature vector matching the expected size
+                features = np.zeros(expected_features)
+                features[0] = norm
+                return features.reshape(1, -1)
+        except:
+            pass
+        
         return np.array([norm]).reshape(1, -1)
 
     def predict_suspicion(self, fen: str, best_move: str, evaluation: dict) -> float:
@@ -49,39 +60,39 @@ class AnomalyDetector:
         Returns a float score (0–1) indicating cheating likelihood.
         """
         features = self.extract_features(fen, best_move, evaluation)
-        score = self.model.predict(features, verbose=0)[0][0]
+        score = self.model.predict(features, verbose=0)[0][0]       # Predict probability[6]
         return float(score)
 
-def load_dataset() -> (np.ndarray, np.ndarray):
+def load_dataset() -> tuple[np.ndarray, np.ndarray]:
     """
-    Placeholder to load training data.
-    Replace with real data-loading logic.
+    Placeholder to load training data. Replace with actual logic.
     """
-    # Example synthetic data for demonstration purposes
-    X = np.random.randn(1000, 1)
-    y = (X[:, 0] > 1.0).astype(int)
+    X = np.random.randn(1000, 1)                                 # Synthetic demo data[7]
+    y = (X[:, 0] > 1.0).astype(int)                              # Synthetic labels[7]
     return X, y
 
 def train_and_save(args):
     """
-    Trains the anomaly detection model and saves it to disk.
+    Trains the anomaly detection model and saves it in native Keras format.
     """
     X, y = load_dataset()
     model = AnomalyDetector.build_model(input_dim=X.shape[1])
     model.fit(X, y,
               epochs=20,
               batch_size=32,
-              validation_split=0.2)
+              validation_split=0.2)                              # Train with validation[8]
     os.makedirs(os.path.dirname(args.save), exist_ok=True)
-    model.save(args.save)                         # Saves as HDF5 by default[2]
+    model.save(args.save, save_format="keras")                  # Save as .keras file[9]
     print(f"Model saved to {args.save}")
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Train or load anomaly detector')  # argparse usage[1]
-    parser.add_argument('--train', action='store_true', help='Run training')
-    parser.add_argument('--save', type=str,
-                        required='--train' in os.sys.argv,
-                        help='Path to save the trained model')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Train or load anomaly detection model")    # CLI for training/inference[10]
+    parser.add_argument("--train", action="store_true",
+                        help="Run training mode")
+    parser.add_argument("--save", type=str,
+                        required="--train" in os.sys.argv,
+                        help="Path to save the trained model")
     args = parser.parse_args()
 
     if args.train:

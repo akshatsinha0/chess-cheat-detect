@@ -1,0 +1,27 @@
+/* Custom styles for chess cheat detection */
+body {
+    background-color: #f8f9fa;
+}
+
+#board {
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.navbar {
+    margin-bottom: 2rem;
+}
+
+footer {
+    background-color: #343a40;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
