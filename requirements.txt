@@ -4,7 +4,7 @@ tensorflow==2.16.1
 scikit-learn==1.3.0
 selenium==4.15.0
 chess==1.11.2
-numpy==1.24.3
+numpy>=1.26.0
 pandas==2.0.3
 mysql-connector-python==8.1.0
 flask==2.3.3
