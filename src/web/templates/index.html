@@ -33,10 +33,19 @@
                             <button class="btn btn-primary" onclick="detectCheat()">Detect Cheat</button>
                             <button class="btn btn-secondary" onclick="captureFromCamera()">Capture Board</button>
                             <button class="btn btn-info" onclick="analyzeFEN()">Analyze FEN</button>
+                            <button class="btn btn-dark ms-2" onclick="prevMove()">&#9664;</button>
+                            <button class="btn btn-dark ms-1" onclick="nextMove()">&#9654;</button>
+                            <button class="btn btn-dark ms-1" onclick="flipBoard()">Flip Board</button>
                         </div>
                         <div class="mt-3">
                             <label for="fenInput" class="form-label">FEN Position:</label>
                             <input type="text" class="form-control" id="fenInput" placeholder="Enter FEN string">
+                            <button class="btn btn-info mt-2" onclick="applyFEN()">Apply FEN</button>
+                        </div>
+                        <div class="mt-3">
+                            <label for="pgnInput" class="form-label">PGN:</label>
+                            <textarea class="form-control" id="pgnInput" rows="2" placeholder="Enter PGN string"></textarea>
+                            <button class="btn btn-info mt-2" onclick="applyPGN()">Apply PGN</button>
                         </div>
                     </div>
                 </div>
