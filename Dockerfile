@@ -1,6 +1,6 @@
 # Dockerfile
 
-# 1. Use a minimal Python base image
+# 1. Use a lightweight Python base image
 FROM python:3.10-slim
 
 # 2. Set working directory
@@ -19,10 +19,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY bin/stockfish/stockfish-ubuntu-x86-64-avx2 /app/engine/stockfish
 RUN chmod +x /app/engine/stockfish
 
-# 6. Copy trained anomaly detection model
+# 6. Copy the trained anomaly detection model
 COPY models/ /app/models/
 
-# 7. Copy application source code
+# 7. Copy the application source code
 COPY . .
 
 # 8. Default command to launch the application

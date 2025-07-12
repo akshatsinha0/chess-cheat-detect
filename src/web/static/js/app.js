@@ -4,11 +4,28 @@ let game = new Chess();
 let socket = null;
 let capturedFEN = null;
 
-// Initialize the application
+// Store move history as pairs of white/black moves and their analysis
+let moveHistoryPairs = [];
+
+// PGN navigation state
+let pgnMoves = [];
+let currentMoveIndex = 0;
+let pgnBaseFen = null;
+
+// On page load, fetch backend FEN and sync board/game
 $(document).ready(function() {
-    initBoard();
-    initSocket();
-    updateStatus();
+    $.post('/api/new_game', function(response) {
+        if (response.status === 'success') {
+            board?.position(response.fen);
+            game.load(response.fen);
+            moveHistoryPairs = [];
+            renderMoveHistoryTable();
+            updateStatus();
+        }
+        initBoard();
+        initSocket();
+        updateStatus();
+    });
 });
 
 // Initialize the chess board
@@ -16,6 +33,7 @@ function initBoard() {
     const config = {
         draggable: true,
         position: 'start',
+        pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png',
         onDragStart: onDragStart,
         onDrop: onDrop,
         onSnapEnd: onSnapEnd
@@ -58,30 +76,35 @@ function onDragStart(source, piece, position, orientation) {
 }
 
 function onDrop(source, target) {
-    // See if the move is legal
     const move = game.move({
         from: source,
         to: target,
-        promotion: 'q' // Always promote to queen for simplicity
+        promotion: 'q'
     });
-    
-    // Illegal move
     if (move === null) return 'snapback';
-    
-    // Send move to server
-    $.post('/api/make_move', {
-        move: move.from + move.to + (move.promotion || '')
-    }).done(function(response) {
-        if (response.status === 'success') {
-            updateStatus();
-            updateCurrentAnalysis(response.analysis);
-            addMoveToHistory(move.san, response.analysis);
+    $.ajax({
+        url: '/api/make_move',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            move: move.from + move.to + (move.promotion || '')
+        }),
+        success: function(response) {
+            if (response.status === 'success') {
+                updateStatus();
+                updateCurrentAnalysis(response.analysis);
+                addMoveToHistory(move.san, response.analysis);
+            }
+        },
+        error: function(error) {
+            // On error, sync board/game with backend FEN
+            $.post('/api/new_game', function(response) {
+                board.position(response.fen);
+                game.load(response.fen);
+                updateStatus();
+            });
+            showAlert('Error making move: ' + error.responseJSON.message, 'danger');
         }
-    }).fail(function(error) {
-        // Revert move
-        game.undo();
-        board.position(game.fen());
-        showAlert('Error making move: ' + error.responseJSON.message, 'danger');
     });
 }
 
@@ -167,49 +190,75 @@ function updateCurrentAnalysis(analysis) {
 }
 
 // Add move to history table
-function addMoveToHistory(move, analysis) {
-    const moveNum = $('#moveHistory tr').length + 1;
-    const evalValue = analysis.evaluation?.value || 0;
-    const evalType = analysis.evaluation?.type || 'cp';
-    const suspicionPercent = (analysis.suspicion_score * 100).toFixed(1);
-    
-    let evalDisplay = '';
-    if (evalType === 'mate') {
-        evalDisplay = `M${Math.abs(evalValue)}`;
+function addMoveToHistory(san, analysis) {
+    const isWhite = (game.history().length % 2) === 1;
+    if (isWhite) {
+        // New turn, add a new row with white's move and analysis
+        moveHistoryPairs.push({
+            white: san,
+            black: '',
+            whiteAnalysis: analysis,
+            blackAnalysis: null
+        });
     } else {
-        evalDisplay = (evalValue / 100).toFixed(2);
+        // Fill in black's move and analysis in the last row
+        if (moveHistoryPairs.length === 0) {
+            moveHistoryPairs.push({
+                white: '',
+                black: san,
+                whiteAnalysis: null,
+                blackAnalysis: analysis
+            });
+        } else {
+            moveHistoryPairs[moveHistoryPairs.length - 1].black = san;
+            moveHistoryPairs[moveHistoryPairs.length - 1].blackAnalysis = analysis;
+        }
     }
-    
-    let suspicionClass = '';
-    if (analysis.suspicion_score > 0.7) {
-        suspicionClass = 'table-danger';
-    } else if (analysis.suspicion_score > 0.5) {
-        suspicionClass = 'table-warning';
+    renderMoveHistoryTable();
+}
+
+function renderMoveHistoryTable() {
+    let html = '';
+    for (let i = 0; i < moveHistoryPairs.length; i++) {
+        const row = moveHistoryPairs[i];
+        html += `<tr>
+            <td>${i + 1}</td>
+            <td>${row.white || ''}</td>
+            <td>${row.black || ''}</td>
+            <td>${row.whiteAnalysis ? (row.whiteAnalysis.best_move || '') : ''}</td>
+            <td>${row.blackAnalysis ? (row.blackAnalysis.best_move || '') : ''}</td>
+            <td>${row.whiteAnalysis ? formatEval(row.whiteAnalysis.evaluation) : ''}</td>
+            <td>${row.blackAnalysis ? formatEval(row.blackAnalysis.evaluation) : ''}</td>
+            <td>${row.whiteAnalysis ? formatSuspicion(row.whiteAnalysis.suspicion_score) : ''}</td>
+            <td>${row.blackAnalysis ? formatSuspicion(row.blackAnalysis.suspicion_score) : ''}</td>
+        </tr>`;
     }
-    
-    const row = `
-        <tr class="${suspicionClass}">
-            <td>${moveNum}</td>
-            <td>${move}</td>
-            <td>${analysis.best_move}</td>
-            <td>${evalDisplay}</td>
-            <td>${suspicionPercent}%</td>
-        </tr>
-    `;
-    
-    $('#moveHistory').append(row);
+    $('#moveHistory').html(html);
+}
+
+function formatEval(evaluation) {
+    if (!evaluation) return '';
+    if (evaluation.type === 'mate') {
+        return `M${Math.abs(evaluation.value)}`;
+    } else {
+        return (evaluation.value / 100).toFixed(2);
+    }
+}
+
+function formatSuspicion(score) {
+    if (typeof score !== 'number') return '';
+    return (score * 100).toFixed(1) + '%';
 }
 
 // Button click handlers
 function newGame() {
-    $.post('/api/new_game').done(function(response) {
+    $.post('/api/new_game', function(response) {
         if (response.status === 'success') {
-            game = new Chess();
-            board.position('start');
-            $('#moveHistory').empty();
-            $('#currentAnalysis').html('<p class="text-muted">Make a move to see analysis</p>');
+            board.position(response.fen);
+            game.load(response.fen);
+            moveHistoryPairs = [];
+            renderMoveHistoryTable();
             updateStatus();
-            showAlert('New game started!', 'success');
         }
     });
 }
@@ -318,6 +367,91 @@ function importPGN() {
     }).fail(function(error) {
         showAlert('Error importing PGN: ' + error.responseJSON.message, 'danger');
     });
+}
+
+function applyFEN() {
+    const fen = $('#fenInput').val().trim();
+    if (fen) {
+        const loaded = game.load(fen);
+        if (loaded) {
+            board.position(fen);
+            moveHistoryPairs = [];
+            renderMoveHistoryTable();
+            updateStatus();
+            showAlert('FEN applied to board.', 'success');
+        } else {
+            showAlert('Invalid FEN string.', 'danger');
+        }
+    }
+}
+
+function applyPGN() {
+    const pgn = $('#pgnInput').val().trim();
+    if (pgn) {
+        const loaded = game.load_pgn(pgn);
+        if (loaded) {
+            // Parse moves for navigation
+            pgnMoves = game.history({ verbose: true });
+            currentMoveIndex = pgnMoves.length;
+            pgnBaseFen = new Chess().fen(); // Always start from standard position for PGN
+            board.position(game.fen());
+            updateMoveListForPGN();
+            updateStatus();
+            showAlert('PGN applied to board.', 'success');
+        } else {
+            showAlert('Invalid PGN string.', 'danger');
+        }
+    }
+}
+
+function updateMoveListForPGN() {
+    // Rebuild moveHistoryPairs from PGN moves up to currentMoveIndex
+    moveHistoryPairs = [];
+    let tempGame = new Chess(pgnBaseFen);
+    for (let i = 0; i < currentMoveIndex; i++) {
+        const move = pgnMoves[i];
+        const san = move.san;
+        const isWhite = (i % 2) === 0;
+        if (isWhite) {
+            moveHistoryPairs.push({ white: san, black: '', whiteAnalysis: null, blackAnalysis: null });
+        } else {
+            moveHistoryPairs[moveHistoryPairs.length - 1].black = san;
+        }
+        tempGame.move(move);
+    }
+    renderMoveHistoryTable();
+}
+
+function prevMove() {
+    if (currentMoveIndex > 0) {
+        currentMoveIndex--;
+        let tempGame = new Chess(pgnBaseFen);
+        for (let i = 0; i < currentMoveIndex; i++) {
+            tempGame.move(pgnMoves[i]);
+        }
+        board.position(tempGame.fen());
+        game.load(tempGame.fen());
+        updateMoveListForPGN();
+        updateStatus();
+    }
+}
+
+function nextMove() {
+    if (currentMoveIndex < pgnMoves.length) {
+        currentMoveIndex++;
+        let tempGame = new Chess(pgnBaseFen);
+        for (let i = 0; i < currentMoveIndex; i++) {
+            tempGame.move(pgnMoves[i]);
+        }
+        board.position(tempGame.fen());
+        game.load(tempGame.fen());
+        updateMoveListForPGN();
+        updateStatus();
+    }
+}
+
+function flipBoard() {
+    board.flip();
 }
 
 // Show alert message

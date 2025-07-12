@@ -1,20 +1,26 @@
-# src/detection/board_detector.py
 
 import cv2
 import numpy as np
 import chess
+from .piece_recognizer import PieceRecognizer
 
 class BoardDetector:
-    def __init__(self, camera_index=0, board_size=(8, 8)):
+    def __init__(self, camera_index=0, board_size=(8, 8), piece_model_path=None):
         """
         Initialize the board detector.
         Args:
             camera_index (int): Webcam device index.
             board_size (tuple): Number of squares (rows, cols).
+            piece_model_path (str): Path to piece recognition model.
         """
         self.camera_index = camera_index
         self.board_size = board_size
         self.capture = cv2.VideoCapture(self.camera_index)
+        
+        # Initialize piece recognizer
+        if piece_model_path is None:
+            piece_model_path = "models/piece_recognizer.h5"
+        self.piece_recognizer = PieceRecognizer(piece_model_path)
 
     def capture_frame(self):
         """
@@ -53,6 +59,16 @@ class BoardDetector:
             raise RuntimeError("Chessboard not detected")  
         return corners
 
+    def recognize_piece(self, square_img):
+        """
+        Recognize a chess piece from a square image.
+        Args:
+            square_img (ndarray): Image of square on the board.
+        Returns:
+            chess.Piece or None: Detected piece or None if empty.
+        """
+        return self.piece_recognizer.recognize(square_img)
+
     def get_fen_from_image(self, frame):
         """
         Extract FEN notation from the board image.
@@ -68,15 +84,15 @@ class BoardDetector:
         h, _ = cv2.findHomography(pts_src, pts_dst)
         warp = cv2.warpPerspective(frame, h, (400, 400))
         
-        # Divide into 8x8 squares and classify pieces (placeholder logic)
+        # Divide into 8x8 squares and classify pieces
         square_size = 50
         board = chess.Board.empty()
         for row in range(8):
             for col in range(8):
                 x, y = col * square_size, row * square_size
                 square_img = warp[y:y+square_size, x:x+square_size]
-                # TODO: Add piece recognition model here
-                # Example: piece = self.recognize_piece(square_img)
-                # if piece: board.set_piece_at(chess.square(col, 7-row), piece)
+                piece = self.recognize_piece(square_img)
+                if piece:
+                    board.set_piece_at(chess.square(col, 7-row), piece)
         
         return board.fen()

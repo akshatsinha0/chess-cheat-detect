@@ -1,27 +1,62 @@
 /* Custom styles for chess cheat detection */
 body {
-    background-color: #f8f9fa;
+    background: #181a20;
+    min-height: 100vh;
+    /* Four-corner radial gradients */
+    background-image:
+        radial-gradient(circle at top left, #ffb86c 0%, transparent 60%),
+        radial-gradient(circle at top right, #ff79c6 0%, transparent 60%),
+        radial-gradient(circle at bottom left, #50fa7b 0%, transparent 60%),
+        radial-gradient(circle at bottom right, #8be9fd 0%, transparent 60%);
+    color: #f8f8f2;
+}
+
+.card, .navbar, .modal-content, .table, .form-control, .btn {
+    background-color: #23272f !important;
+    color: #f8f8f2 !important;
+    border-color: #44475a !important;
+}
+
+.card-header, .navbar {
+    background: rgba(40, 42, 54, 0.95) !important;
+    color: #f8f8f2 !important;
+}
+
+.table th, .table td {
+    border-color: #44475a !important;
 }
 
 #board {
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
+    border: 2px solid #44475a;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px 0 rgba(0,0,0,0.5);
 }
 
-.table {
-    margin-bottom: 0;
+.btn-primary {
+    background: linear-gradient(90deg, #ffb86c, #ff79c6);
+    border: none;
+    color: #181a20 !important;
 }
 
-.navbar {
-    margin-bottom: 2rem;
+.btn-secondary {
+    background: linear-gradient(90deg, #50fa7b, #8be9fd);
+    border: none;
+    color: #181a20 !important;
+}
+
+.btn-info {
+    background: linear-gradient(90deg, #8be9fd, #ffb86c);
+    border: none;
+    color: #181a20 !important;
+}
+
+input.form-control, textarea.form-control {
+    background: #23272f;
+    color: #f8f8f2;
+    border: 1px solid #44475a;
 }
 
 footer {
-    background-color: #343a40;
-    color: white;
-    padding: 10px 0;
-    text-align: center;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
+    background: #23272f;
+    color: #f8f8f2;
 }
