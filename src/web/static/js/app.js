@@ -1,18 +1,11 @@
-// Chess board and game instance
 let board = null;
 let game = new Chess();
 let socket = null;
 let capturedFEN = null;
-
-// Store move history as pairs of white/black moves and their analysis
 let moveHistoryPairs = [];
-
-// PGN navigation state
 let pgnMoves = [];
 let currentMoveIndex = 0;
 let pgnBaseFen = null;
-
-// On page load, fetch backend FEN and sync board/game
 $(document).ready(function() {
     $.post('/api/new_game', function(response) {
         if (response.status === 'success') {
@@ -26,9 +19,18 @@ $(document).ready(function() {
         initSocket();
         updateStatus();
     });
+    // Button animation for .animated-btn
+    $('.animated-btn').each(function() {
+        var btn = $(this);
+        var text = btn.find('.btn-text');
+        btn.on('mouseleave', function() {
+            text.addClass('reverse-anim');
+            text.one('animationend', function() {
+                text.removeClass('reverse-anim');
+            });
+        });
+    });
 });
-
-// Initialize the chess board
 function initBoard() {
     const config = {
         draggable: true,
@@ -40,41 +42,27 @@ function initBoard() {
     };
     board = Chessboard('board', config);
 }
-
-// Initialize WebSocket connection
 function initSocket() {
     socket = io();
-    
     socket.on('connected', function(data) {
         console.log(data.message);
     });
-    
     socket.on('move_made', function(data) {
-        // Update board position
         board.position(data.fen);
-        
-        // Update analysis
         updateCurrentAnalysis(data.analysis);
         addMoveToHistory(data.move, data.analysis);
     });
-    
     socket.on('analysis_result', function(data) {
         updateCurrentAnalysis(data);
     });
 }
-
-// Chess board event handlers
 function onDragStart(source, piece, position, orientation) {
-    // Do not pick up pieces if the game is over
     if (game.game_over()) return false;
-    
-    // Only pick up pieces for the side to move
     if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
         (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
         return false;
     }
 }
-
 function onDrop(source, target) {
     const move = game.move({
         from: source,
@@ -97,7 +85,6 @@ function onDrop(source, target) {
             }
         },
         error: function(error) {
-            // On error, sync board/game with backend FEN
             $.post('/api/new_game', function(response) {
                 board.position(response.fen);
                 game.load(response.fen);
@@ -107,58 +94,42 @@ function onDrop(source, target) {
         }
     });
 }
-
 function onSnapEnd() {
     board.position(game.fen());
 }
-
-// Update game status
 function updateStatus() {
     let status = '';
-    
     const moveColor = game.turn() === 'b' ? 'Black' : 'White';
-    
-    // Checkmate?
     if (game.in_checkmate()) {
         status = 'Game over, ' + moveColor + ' is in checkmate.';
     }
-    // Draw?
     else if (game.in_draw()) {
         status = 'Game over, drawn position';
     }
-    // Game still on
     else {
         status = moveColor + ' to move';
-        
-        // Check?
         if (game.in_check()) {
             status += ', ' + moveColor + ' is in check';
         }
     }
-    
     $('#fenInput').val(game.fen());
 }
-
-// Update current analysis display
 function updateCurrentAnalysis(analysis) {
     const evalValue = analysis.evaluation?.value || 0;
     const evalType = analysis.evaluation?.type || 'cp';
     const suspicionPercent = (analysis.suspicion_score * 100).toFixed(1);
-    
     let evalDisplay = '';
     if (evalType === 'mate') {
         evalDisplay = `Mate in ${Math.abs(evalValue)}`;
     } else {
         evalDisplay = (evalValue / 100).toFixed(2);
     }
-    
     let suspicionClass = 'success';
     if (analysis.suspicion_score > 0.7) {
         suspicionClass = 'danger';
     } else if (analysis.suspicion_score > 0.5) {
         suspicionClass = 'warning';
     }
-    
     const html = `
         <div class="row">
             <div class="col-md-6">
@@ -180,20 +151,14 @@ function updateCurrentAnalysis(analysis) {
             </div>
         </div>
     `;
-    
     $('#currentAnalysis').html(html);
-    
-    // Show alert if high suspicion
     if (analysis.suspicion_score > 0.7) {
         showAlert('High cheating probability detected!', 'danger');
     }
 }
-
-// Add move to history table
 function addMoveToHistory(san, analysis) {
     const isWhite = (game.history().length % 2) === 1;
     if (isWhite) {
-        // New turn, add a new row with white's move and analysis
         moveHistoryPairs.push({
             white: san,
             black: '',
@@ -201,7 +166,6 @@ function addMoveToHistory(san, analysis) {
             blackAnalysis: null
         });
     } else {
-        // Fill in black's move and analysis in the last row
         if (moveHistoryPairs.length === 0) {
             moveHistoryPairs.push({
                 white: '',
@@ -216,7 +180,6 @@ function addMoveToHistory(san, analysis) {
     }
     renderMoveHistoryTable();
 }
-
 function renderMoveHistoryTable() {
     let html = '';
     for (let i = 0; i < moveHistoryPairs.length; i++) {
@@ -235,7 +198,6 @@ function renderMoveHistoryTable() {
     }
     $('#moveHistory').html(html);
 }
-
 function formatEval(evaluation) {
     if (!evaluation) return '';
     if (evaluation.type === 'mate') {
@@ -244,13 +206,10 @@ function formatEval(evaluation) {
         return (evaluation.value / 100).toFixed(2);
     }
 }
-
 function formatSuspicion(score) {
     if (typeof score !== 'number') return '';
     return (score * 100).toFixed(1) + '%';
 }
-
-// Button click handlers
 function newGame() {
     $.post('/api/new_game', function(response) {
         if (response.status === 'success') {
@@ -262,10 +221,8 @@ function newGame() {
         }
     });
 }
-
 function detectCheat() {
     const fen = game.fen();
-    
     $.post('/api/analyze_fen', { fen: fen }).done(function(response) {
         if (response.status === 'success') {
             updateCurrentAnalysis(response);
@@ -275,18 +232,14 @@ function detectCheat() {
         showAlert('Error analyzing position: ' + error.responseJSON.message, 'danger');
     });
 }
-
 function analyzeFEN() {
     const fen = $('#fenInput').val();
-    
     if (!fen) {
         showAlert('Please enter a FEN string', 'warning');
         return;
     }
-    
     $.post('/api/analyze_fen', { fen: fen }).done(function(response) {
         if (response.status === 'success') {
-            // Update board with FEN
             game.load(fen);
             board.position(fen);
             updateStatus();
@@ -297,11 +250,9 @@ function analyzeFEN() {
         showAlert('Error analyzing FEN: ' + error.responseJSON.message, 'danger');
     });
 }
-
 function captureFromCamera() {
     const modal = new bootstrap.Modal(document.getElementById('cameraModal'));
     modal.show();
-    
     $.post('/api/capture_board').done(function(response) {
         if (response.status === 'success') {
             $('#cameraLoading').hide();
@@ -314,7 +265,6 @@ function captureFromCamera() {
         modal.hide();
     });
 }
-
 function useCapturedPosition() {
     if (capturedFEN) {
         game.load(capturedFEN);
@@ -325,29 +275,22 @@ function useCapturedPosition() {
         showAlert('Board position loaded from camera', 'success');
     }
 }
-
 function showImportModal() {
     const modal = new bootstrap.Modal(document.getElementById('importModal'));
     modal.show();
 }
-
 function importPGN() {
     const pgnText = $('#pgnText').val();
-    
     if (!pgnText) {
         showAlert('Please paste a PGN game', 'warning');
         return;
     }
-    
     $.post('/api/import_pgn', { pgn: pgnText }).done(function(response) {
         if (response.status === 'success') {
             const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
             modal.hide();
-            
-            // Display game summary
             const summary = response.summary;
             const gameInfo = response.game_info;
-            
             let alertMessage = `
                 <strong>Game Analysis Complete!</strong><br>
                 ${gameInfo.white} vs ${gameInfo.black} (${gameInfo.result})<br>
@@ -355,10 +298,7 @@ function importPGN() {
                 Average suspicion: ${summary.avg_suspicion.toFixed(1)}%<br>
                 Suspicious moves: ${summary.suspicious_moves}
             `;
-            
             showAlert(alertMessage, summary.avg_suspicion > 50 ? 'warning' : 'success', 10000);
-            
-            // Clear move history and display all analyzed moves
             $('#moveHistory').empty();
             response.analysis.forEach((analysis, index) => {
                 addMoveToHistory(analysis.move, analysis);
@@ -368,7 +308,6 @@ function importPGN() {
         showAlert('Error importing PGN: ' + error.responseJSON.message, 'danger');
     });
 }
-
 function applyFEN() {
     const fen = $('#fenInput').val().trim();
     if (fen) {
@@ -384,16 +323,14 @@ function applyFEN() {
         }
     }
 }
-
 function applyPGN() {
     const pgn = $('#pgnInput').val().trim();
     if (pgn) {
         const loaded = game.load_pgn(pgn);
         if (loaded) {
-            // Parse moves for navigation
             pgnMoves = game.history({ verbose: true });
             currentMoveIndex = pgnMoves.length;
-            pgnBaseFen = new Chess().fen(); // Always start from standard position for PGN
+            pgnBaseFen = new Chess().fen();
             board.position(game.fen());
             updateMoveListForPGN();
             updateStatus();
@@ -403,9 +340,7 @@ function applyPGN() {
         }
     }
 }
-
 function updateMoveListForPGN() {
-    // Rebuild moveHistoryPairs from PGN moves up to currentMoveIndex
     moveHistoryPairs = [];
     let tempGame = new Chess(pgnBaseFen);
     for (let i = 0; i < currentMoveIndex; i++) {
@@ -421,7 +356,6 @@ function updateMoveListForPGN() {
     }
     renderMoveHistoryTable();
 }
-
 function prevMove() {
     if (currentMoveIndex > 0) {
         currentMoveIndex--;
@@ -435,7 +369,6 @@ function prevMove() {
         updateStatus();
     }
 }
-
 function nextMove() {
     if (currentMoveIndex < pgnMoves.length) {
         currentMoveIndex++;
@@ -449,12 +382,9 @@ function nextMove() {
         updateStatus();
     }
 }
-
 function flipBoard() {
     board.flip();
 }
-
-// Show alert message
 function showAlert(message, type = 'info', duration = 5000) {
     const alertHtml = `
         <div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -462,11 +392,8 @@ function showAlert(message, type = 'info', duration = 5000) {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
-    
     const alertElement = $(alertHtml);
     $('#alertContainer').append(alertElement);
-    
-    // Auto dismiss after duration
     setTimeout(() => {
         alertElement.alert('close');
     }, duration);

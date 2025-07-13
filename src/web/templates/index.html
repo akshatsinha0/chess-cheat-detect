@@ -18,10 +18,8 @@
             </div>
         </div>
     </nav>
-
     <div class="container-fluid mt-4">
         <div class="row">
-            <!-- Chess Board Column -->
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
@@ -30,9 +28,9 @@
                     <div class="card-body">
                         <div id="board" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
                         <div class="mt-3 text-center">
-                            <button class="btn btn-primary" onclick="detectCheat()">Detect Cheat</button>
-                            <button class="btn btn-secondary" onclick="captureFromCamera()">Capture Board</button>
-                            <button class="btn btn-info" onclick="analyzeFEN()">Analyze FEN</button>
+                            <button class="btn btn-primary animated-btn" onclick="detectCheat()"><span class="btn-text">Detect Cheat</span></button>
+                            <button class="btn btn-secondary animated-btn" onclick="captureFromCamera()"><span class="btn-text">Capture Board</span></button>
+                            <button class="btn btn-info animated-btn" onclick="analyzeFEN()"><span class="btn-text">Analyze FEN</span></button>
                             <button class="btn btn-dark ms-2" onclick="prevMove()">&#9664;</button>
                             <button class="btn btn-dark ms-1" onclick="nextMove()">&#9654;</button>
                             <button class="btn btn-dark ms-1" onclick="flipBoard()">Flip Board</button>
@@ -50,8 +48,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Analysis Column -->
             <div class="col-md-6">
                 <div class="card mb-3">
                     <div class="card-header">
@@ -63,7 +59,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">Move History & Analysis</h5>
@@ -90,13 +85,9 @@
                 </div>
             </div>
         </div>
-
-        <!-- Alerts -->
         <div id="alertContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
         </div>
     </div>
-
-    <!-- Import PGN Modal -->
     <div class="modal fade" id="importModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -114,8 +105,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Camera Capture Modal -->
     <div class="modal fade" id="cameraModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -136,8 +125,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>

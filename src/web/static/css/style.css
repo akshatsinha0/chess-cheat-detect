@@ -1,8 +1,6 @@
-/* Custom styles for chess cheat detection */
 body {
     background: #181a20;
     min-height: 100vh;
-    /* Four-corner radial gradients */
     background-image:
         radial-gradient(circle at top left, #ffb86c 0%, transparent 60%),
         radial-gradient(circle at top right, #ff79c6 0%, transparent 60%),
@@ -10,53 +8,111 @@ body {
         radial-gradient(circle at bottom right, #8be9fd 0%, transparent 60%);
     color: #f8f8f2;
 }
-
 .card, .navbar, .modal-content, .table, .form-control, .btn {
     background-color: #23272f !important;
     color: #f8f8f2 !important;
     border-color: #44475a !important;
 }
-
 .card-header, .navbar {
     background: rgba(40, 42, 54, 0.95) !important;
     color: #f8f8f2 !important;
 }
-
 .table th, .table td {
     border-color: #44475a !important;
 }
-
 #board {
     border: 2px solid #44475a;
     border-radius: 16px;
     box-shadow: 0 4px 32px 0 rgba(0,0,0,0.5);
 }
-
 .btn-primary {
     background: linear-gradient(90deg, #ffb86c, #ff79c6);
     border: none;
     color: #181a20 !important;
 }
-
 .btn-secondary {
     background: linear-gradient(90deg, #50fa7b, #8be9fd);
     border: none;
     color: #181a20 !important;
 }
-
 .btn-info {
     background: linear-gradient(90deg, #8be9fd, #ffb86c);
     border: none;
     color: #181a20 !important;
 }
-
 input.form-control, textarea.form-control {
     background: #23272f;
     color: #f8f8f2;
     border: 1px solid #44475a;
 }
-
 footer {
     background: #23272f;
     color: #f8f8f2;
+}
+.animated-btn {
+    position: relative;
+    overflow: hidden;
+}
+.animated-btn .btn-text {
+    display: inline-block;
+    transition: transform 0.35s cubic-bezier(0.77,0,0.175,1);
+    will-change: transform;
+    position: relative;
+    z-index: 1;
+}
+.animated-btn:hover .btn-text, .animated-btn:focus .btn-text {
+    animation: btnTextHoverUpDown 0.6s cubic-bezier(0.77,0,0.175,1) forwards;
+}
+.animated-btn .btn-text.reverse-anim {
+    animation: btnTextHoverDownUp 0.6s cubic-bezier(0.77,0,0.175,1) forwards;
+}
+@keyframes btnTextHoverUpDown {
+    0% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-60%);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    51% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    70% {
+        transform: translateY(10%);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+@keyframes btnTextHoverDownUp {
+    0% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(60%);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    51% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    70% {
+        transform: translateY(-10%);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
