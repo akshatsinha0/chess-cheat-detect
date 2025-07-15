@@ -174,3 +174,5 @@ footer {
 #sidebar .close-btn:hover {
     color: #ff79c6;
 }
+.glow-btn{background:linear-gradient(90deg,#ffb86c,#ff79c6);color:#181a20!important;border:none;box-shadow:0 0 16px 2px #ffb86c,0 0 32px 4px #ff79c6;transition:box-shadow 0.3s,transform 0.2s;position:relative;z-index:1;}.glow-btn:hover,.glow-btn:focus{box-shadow:0 0 32px 8px #ffb86c,0 0 64px 16px #ff79c6;transform:scale(1.07);filter:brightness(1.15);}.glow-btn:active{transform:scale(0.97);filter:brightness(0.95);}
+.navbar{position:sticky;top:0;z-index:1050;}

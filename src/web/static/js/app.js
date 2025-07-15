@@ -521,8 +521,11 @@ $(document).ready(function() {
     $(".btn-primary.animated-btn:contains('Detect Cheat')").off('click').on('click', function() {
         let pgn = $('#analyzePgnInput').val().trim() || $('#pgnInput').val().trim();
         if (!pgn) {
-            showAlert('Please paste a PGN for cheat detection.', 'warning');
-            return;
+            pgn = game.pgn();
+            if (!pgn || pgn.trim().length === 0) {
+                showAlert('No moves to analyze for cheat detection.', 'warning');
+                return;
+            }
         }
         openSidebar('Cheat Detection', '<span class="text-info">Detecting cheat...</span>');
         $.ajax({
@@ -551,6 +554,49 @@ $(document).ready(function() {
             }
         });
     });
+});
+// --- Added PGN Management ---
+let addedPgnList = [];
+function renderAddedPgnBox() {
+    const box = $('#addedPgnBox');
+    if (addedPgnList.length === 0) {
+        box.html('<span class="text-muted">No games added yet.</span>');
+        return;
+    }
+    let html = '<ul class="list-group">';
+    addedPgnList.forEach((pgn, idx) => {
+        html += `<li class="list-group-item d-flex justify-content-between align-items-center bg-dark text-light">
+            <span style="word-break:break-all;">${pgn.replace(/\n/g, ' ')}</span>
+            <button class="btn btn-sm btn-danger ms-2" onclick="deletePgn(${idx})" title="Delete"><i class="bi bi-trash"></i></button>
+        </li>`;
+    });
+    html += '</ul>';
+    box.html(html);
+}
+function deletePgn(idx) {
+    addedPgnList.splice(idx, 1);
+    renderAddedPgnBox();
+}
+window.deletePgn = deletePgn;
+// --- Finish Game Button ---
+$('#finishGameBtn').on('click', function() {
+    const pgn = game.pgn();
+    if (pgn && pgn.trim().length > 0) {
+        addedPgnList.push(pgn);
+        renderAddedPgnBox();
+        showAlert('Game added to PGN list.', 'success');
+    } else {
+        showAlert('No moves to save.', 'warning');
+    }
+});
+// --- New Game Button ---
+$('#newGameBtn').on('click', function() {
+    newGame();
+    showAlert('New game started.', 'info');
+});
+// --- Improved Detect Cheat Button Logic ---
+$(document).ready(function() {
+    renderAddedPgnBox();
 });
 // --- End of new features ---
 
