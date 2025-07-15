@@ -25,18 +25,18 @@
     <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card enhanced-card">
+                    <div class="card-header enhanced-card-header">
                         <h5 class="mb-0">Chess Board</h5>
                     </div>
                     <div class="card-body">
-                        <div id="board" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
+                        <div id="board" class="enhanced-chessboard" style="width: 100%; max-width: 500px; margin: 0 auto;" data-tooltip="Interactive Chess Board - Drag pieces to make moves"></div>
                         <div class="mt-3 text-center">
-                            <button class="btn btn-primary animated-btn" onclick="detectCheat()"><span class="btn-text">Detect Cheat</span></button>
-                            <button class="btn btn-secondary animated-btn" onclick="captureFromCamera()"><span class="btn-text">Capture Board</span></button>
-                            <button class="btn btn-info animated-btn" onclick="analyzeFEN()"><span class="btn-text">Analyze FEN</span></button>
-                            <button class="btn glow-btn ms-2" id="finishGameBtn">Finish Game</button>
-                            <button class="btn glow-btn ms-1" id="newGameBtn">New Game</button>
+                            <button class="btn btn-primary animated-btn" onclick="detectCheat()" data-tooltip="Analyze current position for suspicious moves"><span class="btn-text">Detect Cheat</span></button>
+                            <button class="btn btn-secondary animated-btn" onclick="captureFromCamera()" data-tooltip="Capture board position from camera"><span class="btn-text">Capture Board</span></button>
+                            <button class="btn btn-info animated-btn" onclick="analyzeFEN()" data-tooltip="Analyze the current FEN position"><span class="btn-text">Analyze FEN</span></button>
+                            <button class="btn glow-btn ms-2" id="finishGameBtn" data-tooltip="Save current game to PGN list">Finish Game</button>
+                            <button class="btn glow-btn ms-1" id="newGameBtn" data-tooltip="Start a new chess game">New Game</button>
                             <div class="mt-3">
                                 <button class="btn btn-dark ms-2" onclick="prevMove()">&#9664;</button>
                                 <button class="btn btn-dark ms-1" onclick="nextMove()">&#9654;</button>
@@ -66,22 +66,22 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card mb-3">
-                    <div class="card-header">
+                <div class="card enhanced-card mb-3">
+                    <div class="card-header enhanced-card-header">
                         <h5 class="mb-0">Current Analysis</h5>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body enhanced-card-body">
                         <div id="currentAnalysis">
                             <p class="text-muted">Make a move to see analysis</p>
                         </div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-header">
+                <div class="card enhanced-card">
+                    <div class="card-header enhanced-card-header">
                         <h5 class="mb-0">Move History & Analysis</h5>
                     </div>
-                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-sm">
+                    <div class="card-body enhanced-card-body enhanced-scrollbar" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm enhanced-table">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -100,11 +100,11 @@
                         </table>
                     </div>
                 </div>
-                <div class="card mt-3">
-                    <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card enhanced-card mt-3">
+                    <div class="card-header enhanced-card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Added PGN</h5>
                     </div>
-                    <div class="card-body" id="addedPgnBox" style="max-height: 200px; overflow-y: auto;">
+                    <div class="card-body enhanced-card-body enhanced-scrollbar" id="addedPgnBox" style="max-height: 200px; overflow-y: auto;">
                         <!-- PGN list will be rendered here -->
                     </div>
                 </div>
@@ -120,7 +120,7 @@
           <button class="close-btn" onclick="closeSidebar()">&times;</button>
         </div>
         <div class="sidebar-content" id="sidebar-content">
-          <!-- Dynamic content goes here -->
+      
         </div>
       </div>
     </div>

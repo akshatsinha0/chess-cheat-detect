@@ -1,0 +1,385 @@
+.enhanced-input {
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: var(--space-md);
+  transition: all var(--animation-speed) var(--smooth-ease);
+  position: relative;
+  backdrop-filter: var(--glass-blur);
+}
+
+.enhanced-input:focus {
+  outline: none;
+  border-color: var(--accent-orange);
+  box-shadow: 0 0 0 3px rgba(255, 184, 108, 0.2);
+  background: var(--glass-bg-light);
+}
+
+.enhanced-input:focus + .floating-label {
+  transform: translateY(-25px) scale(0.8);
+  color: var(--accent-orange);
+}
+
+.floating-label {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  transition: all var(--animation-speed) var(--smooth-ease);
+  pointer-events: none;
+  background: var(--card-bg);
+  padding: 0 var(--space-xs);
+}
+
+
+.enhanced-tooltip {
+  position: absolute;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur-heavy);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: var(--z-tooltip);
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+  transition: all var(--animation-speed) var(--elastic-ease);
+  pointer-events: none;
+  box-shadow: var(--depth-shadow);
+}
+
+.enhanced-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.enhanced-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--glass-bg);
+}
+
+
+.chess-piece {
+  transition: all var(--animation-speed) var(--smooth-ease);
+  cursor: pointer;
+  position: relative;
+}
+
+.chess-piece:hover {
+  transform: var(--hover-lift) scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(255, 184, 108, 0.3));
+}
+
+.chess-piece.selected {
+  transform: var(--hover-lift) scale(1.1);
+  filter: drop-shadow(0 6px 12px rgba(255, 184, 108, 0.5));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.chess-piece.dragging {
+  transform: scale(1.2) rotate(5deg);
+  filter: drop-shadow(0 8px 16px rgba(255, 184, 108, 0.6));
+  z-index: var(--z-modal);
+}
+
+
+.chess-square {
+  position: relative;
+  transition: all var(--animation-speed) var(--smooth-ease);
+}
+.chess-square::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--accent-orange);
+  opacity: 0;
+  transition: opacity var(--animation-speed);
+  border-radius: var(--radius-sm);
+}
+
+.chess-square:hover::before {
+  opacity: 0.1;
+}
+
+.chess-square.possible-move::before {
+  opacity: 0.3;
+  background: var(--accent-cyan);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.chess-square.last-move::before {
+  opacity: 0.2;
+  background: var(--accent-green);
+}
+
+.chess-square.check::before {
+  opacity: 0.4;
+  background: #ff5555;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+
+.interactive-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--animation-speed) var(--smooth-ease);
+  transform-origin: center;
+}
+
+.interactive-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.interactive-btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.interactive-btn:hover {
+  transform: var(--hover-lift) scale(1.02);
+}
+
+.interactive-btn:active {
+  transform: scale(0.98);
+}
+
+
+.interactive-card {
+  transition: all var(--animation-speed) var(--smooth-ease);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.interactive-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.8s var(--smooth-ease);
+}
+
+.interactive-card:hover {
+  transform: var(--hover-lift);
+  box-shadow: var(--depth-shadow-heavy);
+}
+
+.interactive-card:hover::before {
+  left: 100%;
+}
+
+
+.interactive-row {
+  transition: all var(--animation-speed) var(--smooth-ease);
+  cursor: pointer;
+  position: relative;
+}
+
+.interactive-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--gradient-primary);
+  transition: width var(--animation-speed) var(--smooth-ease);
+}
+
+.interactive-row:hover {
+  background: rgba(255, 184, 108, 0.05);
+  transform: translateX(4px);
+}
+
+.interactive-row:hover::before {
+  width: 3px;
+}
+
+
+.focus-indicator {
+  position: relative;
+}
+
+.focus-indicator::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid var(--accent-orange);
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transition: opacity var(--animation-speed);
+  animation: focusPulse 2s ease-in-out infinite;
+}
+
+.focus-indicator:focus::after {
+  opacity: 1;
+}
+
+@keyframes focusPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 184, 108, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 184, 108, 0);
+  }
+}
+
+
+.loading-state {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.loading-state::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: inherit;
+}
+
+
+.success-state {
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(80, 250, 123, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(80, 250, 123, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(80, 250, 123, 0);
+  }
+}
+
+
+.error-state {
+  animation: errorShake 0.6s ease-out;
+  border-color: #ff5555 !important;
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+
+.drag-over {
+  background: rgba(139, 233, 253, 0.1);
+  border: 2px dashed var(--accent-cyan);
+  animation: dragPulse 1s ease-in-out infinite;
+}
+
+@keyframes dragPulse {
+  0%, 100% {
+    border-color: var(--accent-cyan);
+    background: rgba(139, 233, 253, 0.1);
+  }
+  50% {
+    border-color: var(--accent-orange);
+    background: rgba(255, 184, 108, 0.1);
+  }
+}
+
+.drop-zone {
+  transition: all var(--animation-speed) var(--smooth-ease);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+}
+
+.drop-zone.active {
+  border-color: var(--accent-green);
+  background: rgba(80, 250, 123, 0.1);
+  transform: scale(1.02);
+}
+
+
+.keyboard-nav:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 184, 108, 0.3);
+  border-radius: var(--radius-sm);
+}
+
+.keyboard-nav:focus-visible {
+  animation: focusGlow 2s ease-in-out infinite;
+}
+
+@keyframes focusGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(255, 184, 108, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 184, 108, 0.1);
+  }
+}
+
+
+@media (hover: none) and (pointer: coarse) {
+  .interactive-btn:hover {
+    transform: none;
+  }
+  
+  .interactive-btn:active {
+    transform: scale(0.95);
+    background: rgba(255, 184, 108, 0.1);
+  }
+  
+  .interactive-card:hover {
+    transform: none;
+  }
+  
+  .interactive-card:active {
+    transform: scale(0.98);
+  }
+  
+  .chess-piece:hover {
+    transform: none;
+  }
+  
+  .chess-piece:active {
+    transform: scale(1.1);
+  }
+}

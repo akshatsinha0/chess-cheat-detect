@@ -1,0 +1,32 @@
+# version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: chessdb
+      MYSQL_USER: chessuser
+      MYSQL_PASSWORD: chesspass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+  web:
+    build: .
+    command: flask run --host=0.0.0.0
+    environment:
+      FLASK_ENV: development
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: chessdb
+      MYSQL_USER: chessuser
+      MYSQL_PASSWORD: chesspass
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+volumes:
+  db_data: 

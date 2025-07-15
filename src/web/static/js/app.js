@@ -18,6 +18,7 @@ $(document).ready(function() {
         initBoard();
         initSocket();
         updateStatus();
+        initEnhancements();
     });
     // Button animation for .animated-btn
     $('.animated-btn').each(function() {
@@ -31,6 +32,244 @@ $(document).ready(function() {
         });
     });
 });
+
+// Initialize UI Enhancements
+function initEnhancements() {
+    initRippleEffects();
+    initParticleSystem();
+    initTooltips();
+    initEnhancedCards();
+    initProgressBars();
+}
+
+// Ripple Effect System
+function initRippleEffects() {
+    // Add ripple effect to all buttons
+    $('.btn, .enhanced-btn').each(function() {
+        if (!$(this).hasClass('ripple-container')) {
+            $(this).addClass('ripple-container');
+        }
+    });
+    
+    // Handle click events for ripple effect
+    $(document).on('click', '.ripple-container', function(e) {
+        createRipple(e, this);
+    });
+}
+
+function createRipple(event, element) {
+    const $element = $(element);
+    const rect = element.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+    
+    const $ripple = $('<span class="ripple"></span>');
+    $ripple.css({
+        width: size + 'px',
+        height: size + 'px',
+        left: x + 'px',
+        top: y + 'px'
+    });
+    
+    $element.append($ripple);
+
+    setTimeout(() => {
+        $ripple.remove();
+    }, 600);
+}
+
+
+function initParticleSystem() {
+ 
+    if ($('.particle-container').length === 0) {
+        const particleContainer = $('<div class="particle-container"></div>');
+        
+    
+        for (let i = 0; i < 10; i++) {
+            const particle = $('<div class="particle"></div>');
+            particle.css({
+                left: Math.random() * 100 + '%',
+                top: Math.random() * 100 + '%',
+                animationDelay: Math.random() * 20 + 's',
+                animationDuration: (15 + Math.random() * 10) + 's'
+            });
+            particleContainer.append(particle);
+        }
+        
+        $('body').append(particleContainer);
+    }
+    
+
+    if ($('.ambient-glow').length === 0) {
+        $('body').append('<div class="ambient-glow"></div>');
+    }
+}
+
+
+function initTooltips() {
+  
+    $('[data-tooltip]').each(function() {
+        const $element = $(this);
+        const tooltipText = $element.data('tooltip');
+        
+        $element.on('mouseenter', function(e) {
+            showTooltip(e, tooltipText);
+        });
+        
+        $element.on('mouseleave', function() {
+            hideTooltip();
+        });
+    });
+}
+
+function showTooltip(event, text) {
+    const $tooltip = $('<div class="enhanced-tooltip">' + text + '</div>');
+    $('body').append($tooltip);
+    
+    const rect = event.target.getBoundingClientRect();
+    const tooltipRect = $tooltip[0].getBoundingClientRect();
+    
+    let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+    let top = rect.top - tooltipRect.height - 10;
+
+    if (left < 10) left = 10;
+    if (left + tooltipRect.width > window.innerWidth - 10) {
+        left = window.innerWidth - tooltipRect.width - 10;
+    }
+    if (top < 10) {
+        top = rect.bottom + 10;
+    }
+    
+    $tooltip.css({
+        left: left + 'px',
+        top: top + 'px'
+    });
+
+    setTimeout(() => {
+        $tooltip.addClass('visible');
+    }, 10);
+}
+
+function hideTooltip() {
+    $('.enhanced-tooltip').removeClass('visible');
+    setTimeout(() => {
+        $('.enhanced-tooltip').remove();
+    }, 300);
+}
+
+function initEnhancedCards() {
+    $('.card').each(function() {
+        if (!$(this).hasClass('enhanced-card')) {
+            $(this).addClass('enhanced-card hover-lift');
+        }
+    });
+}
+
+function initProgressBars() {
+    $('.progress-bar').each(function() {
+        if (!$(this).hasClass('enhanced-progress-bar')) {
+            $(this).addClass('enhanced-progress-bar');
+        }
+    });
+}
+
+
+function createParticleBurst(x, y, color = '#ffb86c') {
+    const $burst = $('<div class="particle-burst"></div>');
+    $burst.css({
+        left: x + 'px',
+        top: y + 'px'
+    });
+    
+  
+    for (let i = 0; i < 8; i++) {
+        const $particle = $('<div class="burst-particle"></div>');
+        $particle.css({
+            background: color,
+            transform: `rotate(${i * 45}deg) translateX(30px)`
+        });
+        $burst.append($particle);
+    }
+    
+    $('body').append($burst);
+    
+
+    setTimeout(() => {
+        $burst.remove();
+    }, 800);
+}
+
+function showEnhancedAlert(message, type = 'info', duration = 5000) {
+    const alertTypes = {
+        'info': 'enhanced-alert',
+        'success': 'enhanced-alert success',
+        'danger': 'enhanced-alert danger',
+        'warning': 'enhanced-alert warning'
+    };
+    
+    const alertHtml = `
+        <div class="${alertTypes[type]} animate-slide-in-right" role="alert">
+            <div class="enhanced-alert-content">
+                <div class="enhanced-alert-icon">${getAlertIcon(type)}</div>
+                <div class="enhanced-alert-text">${message}</div>
+                <button type="button" class="btn-close" onclick="$(this).closest('.enhanced-alert').remove();">&times;</button>
+            </div>
+        </div>
+    `;
+    
+    const $alert = $(alertHtml);
+    $('#alertContainer').append($alert);
+    
+
+    setTimeout(() => {
+        $alert.addClass('animate-fade-out');
+        setTimeout(() => {
+            $alert.remove();
+        }, 300);
+    }, duration);
+}
+
+function getAlertIcon(type) {
+    const icons = {
+        'info': 'ℹ',
+        'success': '✓',
+        'danger': '⚠',
+        'warning': '!'
+    };
+    return icons[type] || icons['info'];
+}
+
+function createCircularGauge(container, value, max = 100, label = '') {
+    const percentage = (value / max) * 100;
+    const rotation = (percentage / 100) * 180 - 90; // -90 to 90 degrees
+    
+    const gaugeHtml = `
+        <div class="circular-gauge">
+            <div class="circular-gauge-inner">
+                <div class="circular-gauge-needle" style="transform: rotate(${rotation}deg);"></div>
+                <div class="circular-gauge-value">${Math.round(percentage)}%</div>
+                <div class="circular-gauge-label">${label}</div>
+            </div>
+        </div>
+    `;
+    
+    $(container).html(gaugeHtml);
+}
+
+
+function setLoadingState(element, loading = true) {
+    const $element = $(element);
+    if (loading) {
+        $element.addClass('loading-state');
+        if (!$element.find('.enhanced-spinner').length) {
+            $element.append('<div class="enhanced-spinner"></div>');
+        }
+    } else {
+        $element.removeClass('loading-state');
+        $element.find('.enhanced-spinner').remove();
+    }
+}
 function initBoard() {
     const config = {
         draggable: true,
@@ -44,6 +283,70 @@ function initBoard() {
         onSnapEnd: onSnapEnd
     };
     board = Chessboard('board', config);
+    
+
+    setTimeout(() => {
+        initChessPieceEnhancements();
+    }, 500);
+}
+
+function initChessPieceEnhancements() {
+
+    $('#board .square-55d63').each(function() {
+        const $square = $(this);
+        
+        $square.on('mouseenter', function() {
+            const $piece = $square.find('img');
+            if ($piece.length > 0) {
+                $piece.addClass('chess-piece-hover');
+                showPossibleMoves($square.data('square'));
+            }
+        });
+        
+        $square.on('mouseleave', function() {
+            const $piece = $square.find('img');
+            $piece.removeClass('chess-piece-hover');
+            hidePossibleMoves();
+        });
+    });
+    
+
+    $('#board img').each(function() {
+        $(this).addClass('chess-piece-enhanced');
+    });
+}
+
+function showPossibleMoves(square) {
+    if (!square || game.game_over()) return;
+    
+    try {
+        const moves = game.moves({
+            square: square,
+            verbose: true
+        });
+        
+        moves.forEach(move => {
+            const $targetSquare = $(`[data-square="${move.to}"]`);
+            if ($targetSquare.length > 0) {
+                $targetSquare.addClass('possible-move-highlight');
+                
+                
+                const $indicator = $('<div class="move-indicator"></div>');
+                $targetSquare.append($indicator);
+                
+                setTimeout(() => {
+                    $indicator.addClass('visible');
+                }, 50);
+            }
+        });
+    } catch (e) {
+      
+    }
+}
+
+function hidePossibleMoves() {
+    $('.possible-move-highlight').removeClass('possible-move-highlight');
+    $('.move-indicator').remove();
 }
 function initSocket() {
     socket = io();
@@ -80,7 +383,7 @@ function playSound(type) {
         sounds[type].play();
     }
 }
-// --- Enhanced onDrop with sound ---
+
 function onDrop(source, target) {
     const move = game.move({
         from: source,
@@ -88,12 +391,12 @@ function onDrop(source, target) {
         promotion: 'q'
     });
     if (move === null) return 'snapback';
-    // Determine sound type
+
     let soundType = 'move';
     if (move.flags.includes('c')) soundType = 'capture';
     if (move.flags.includes('k') || move.flags.includes('q')) soundType = 'castle';
     if (move.flags.includes('p')) soundType = 'promote';
-    // Check for check
+
     setTimeout(() => {
         if (game.in_check()) {
             playSound('check');
@@ -162,31 +465,50 @@ function updateCurrentAnalysis(analysis) {
     } else if (analysis.suspicion_score > 0.5) {
         suspicionClass = 'warning';
     }
+    
+  
     const html = `
-        <div class="row">
-            <div class="col-md-6">
-                <h6>Best Move:</h6>
-                <p class="fw-bold">${analysis.best_move || 'N/A'}</p>
+        <div class="enhanced-analysis-container">
+            <div class="analysis-card animate-fade-in animate-stagger-1">
+                <div class="analysis-header">
+                    <h6><i class="analysis-icon">♔</i> Best Move</h6>
+                </div>
+                <div class="analysis-value">${analysis.best_move || 'N/A'}</div>
             </div>
-            <div class="col-md-6">
-                <h6>Evaluation:</h6>
-                <p class="fw-bold">${evalDisplay}</p>
+            <div class="analysis-card animate-fade-in animate-stagger-2">
+                <div class="analysis-header">
+                    <h6><i class="analysis-icon">⚖</i> Evaluation</h6>
+                </div>
+                <div class="analysis-value">${evalDisplay}</div>
             </div>
-        </div>
-        <div class="mt-3">
-            <h6>Cheating Suspicion:</h6>
-            <div class="progress" style="height: 25px;">
-                <div class="progress-bar bg-${suspicionClass}" role="progressbar" 
-                     style="width: ${suspicionPercent}%">
-                    ${suspicionPercent}%
+            <div class="analysis-card animate-fade-in animate-stagger-3">
+                <div class="analysis-header">
+                    <h6><i class="analysis-icon">🔍</i> Suspicion Level</h6>
+                </div>
+                <div class="enhanced-progress">
+                    <div class="enhanced-progress-bar shimmer bg-${suspicionClass}" 
+                         style="width: ${suspicionPercent}%">
+                        <span class="progress-text">${suspicionPercent}%</span>
+                    </div>
                 </div>
             </div>
         </div>
     `;
+    
     $('#currentAnalysis').html(html);
+    
+
     if (analysis.suspicion_score > 0.7) {
-        showAlert('High cheating probability detected!', 'danger');
+        showEnhancedAlert('High cheating probability detected!', 'danger');
+        createParticleBurst(window.innerWidth - 100, 100, '#ff5555');
     }
+    
+
+    setTimeout(() => {
+        if ($('.analysis-card').length > 0) {
+            createCircularGauge('.analysis-card:last-child .enhanced-progress', suspicionPercent, 100, 'Suspicion');
+        }
+    }, 500);
 }
 function addMoveToHistory(san, analysis) {
     const isWhite = (game.history().length % 2) === 1;
@@ -439,7 +761,7 @@ function goToEnd() {
     updateStatus();
     playSound('move');
 }
-// --- Keyboard Navigation ---
+
 document.addEventListener('keydown', function(e) {
     if (e.key === 'ArrowLeft') {
         prevMove();
@@ -453,17 +775,8 @@ function flipBoard() {
     board.flip();
 }
 function showAlert(message, type = 'info', duration = 5000) {
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `;
-    const alertElement = $(alertHtml);
-    $('#alertContainer').append(alertElement);
-    setTimeout(() => {
-        alertElement.alert('close');
-    }, duration);
+    // Use enhanced alert system for better visual effects
+    showEnhancedAlert(message, type, duration);
 }
 
 // --- Sidebar Logic ---
@@ -480,7 +793,7 @@ function closeSidebar() {
 $('#sidebar-overlay').on('click', function(e) {
     if (e.target === this) closeSidebar();
 });
-// --- Updated Analyze PGN Button Logic ---
+
 $(document).ready(function() {
     $('#analyzePgnBtn').off('click').on('click', function() {
         const pgn = $('#analyzePgnInput').val();
@@ -517,7 +830,7 @@ $(document).ready(function() {
             }
         });
     });
-    // --- Updated Detect Cheat Button Logic ---
+
     $(".btn-primary.animated-btn:contains('Detect Cheat')").off('click').on('click', function() {
         let pgn = $('#analyzePgnInput').val().trim() || $('#pgnInput').val().trim();
         if (!pgn) {
@@ -555,7 +868,7 @@ $(document).ready(function() {
         });
     });
 });
-// --- Added PGN Management ---
+
 let addedPgnList = [];
 function renderAddedPgnBox() {
     const box = $('#addedPgnBox');
@@ -578,7 +891,7 @@ function deletePgn(idx) {
     renderAddedPgnBox();
 }
 window.deletePgn = deletePgn;
-// --- Finish Game Button ---
+
 $('#finishGameBtn').on('click', function() {
     const pgn = game.pgn();
     if (pgn && pgn.trim().length > 0) {
@@ -589,16 +902,16 @@ $('#finishGameBtn').on('click', function() {
         showAlert('No moves to save.', 'warning');
     }
 });
-// --- New Game Button ---
+
 $('#newGameBtn').on('click', function() {
     newGame();
     showAlert('New game started.', 'info');
 });
-// --- Improved Detect Cheat Button Logic ---
+
 $(document).ready(function() {
     renderAddedPgnBox();
 });
-// --- End of new features ---
+
 
 function syncMoveHistoryFromGame() {
     pgnMoves = game.history({ verbose: true });

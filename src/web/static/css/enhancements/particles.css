@@ -1,0 +1,392 @@
+.particle-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: var(--particle-size);
+  height: var(--particle-size);
+  background: var(--accent-orange);
+  border-radius: 50%;
+  opacity: var(--particle-opacity);
+  animation: float var(--particle-speed) ease-in-out infinite;
+}
+
+.particle:nth-child(1) {
+  left: 10%;
+  animation-delay: 0s;
+  animation-duration: 20s;
+  background: var(--accent-orange);
+}
+
+.particle:nth-child(2) {
+  left: 20%;
+  animation-delay: 2s;
+  animation-duration: 25s;
+  background: var(--accent-pink);
+}
+
+.particle:nth-child(3) {
+  left: 30%;
+  animation-delay: 4s;
+  animation-duration: 18s;
+  background: var(--accent-green);
+}
+
+.particle:nth-child(4) {
+  left: 40%;
+  animation-delay: 6s;
+  animation-duration: 22s;
+  background: var(--accent-cyan);
+}
+
+.particle:nth-child(5) {
+  left: 50%;
+  animation-delay: 8s;
+  animation-duration: 24s;
+  background: var(--accent-orange);
+}
+
+.particle:nth-child(6) {
+  left: 60%;
+  animation-delay: 10s;
+  animation-duration: 19s;
+  background: var(--accent-pink);
+}
+
+.particle:nth-child(7) {
+  left: 70%;
+  animation-delay: 12s;
+  animation-duration: 26s;
+  background: var(--accent-green);
+}
+
+.particle:nth-child(8) {
+  left: 80%;
+  animation-delay: 14s;
+  animation-duration: 21s;
+  background: var(--accent-cyan);
+}
+
+.particle:nth-child(9) {
+  left: 90%;
+  animation-delay: 16s;
+  animation-duration: 23s;
+  background: var(--accent-orange);
+}
+
+.particle:nth-child(10) {
+  left: 15%;
+  animation-delay: 18s;
+  animation-duration: 27s;
+  background: var(--accent-pink);
+}
+
+
+.particle-line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-orange), transparent);
+  opacity: 0.2;
+  animation: drift 15s ease-in-out infinite;
+}
+
+.particle-line:nth-child(odd) {
+  animation-direction: reverse;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+}
+
+
+.sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--accent-orange);
+  border-radius: 50%;
+  opacity: 0;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(180deg);
+  }
+}
+
+.sparkle:nth-child(1) { animation-delay: 0s; }
+.sparkle:nth-child(2) { animation-delay: 0.2s; }
+.sparkle:nth-child(3) { animation-delay: 0.4s; }
+.sparkle:nth-child(4) { animation-delay: 0.6s; }
+.sparkle:nth-child(5) { animation-delay: 0.8s; }
+
+
+.particle-burst {
+  position: absolute;
+  pointer-events: none;
+  z-index: var(--z-tooltip);
+}
+
+.burst-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--accent-orange);
+  border-radius: 50%;
+  animation: burstOut 0.8s ease-out forwards;
+}
+
+@keyframes burstOut {
+  0% {
+    opacity: 1;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-50px);
+  }
+}
+
+.burst-particle:nth-child(1) { transform: rotate(0deg) translateX(30px); }
+.burst-particle:nth-child(2) { transform: rotate(45deg) translateX(30px); }
+.burst-particle:nth-child(3) { transform: rotate(90deg) translateX(30px); }
+.burst-particle:nth-child(4) { transform: rotate(135deg) translateX(30px); }
+.burst-particle:nth-child(5) { transform: rotate(180deg) translateX(30px); }
+.burst-particle:nth-child(6) { transform: rotate(225deg) translateX(30px); }
+.burst-particle:nth-child(7) { transform: rotate(270deg) translateX(30px); }
+.burst-particle:nth-child(8) { transform: rotate(315deg) translateX(30px); }
+
+
+.piece-glow {
+  position: relative;
+}
+
+.piece-glow::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: radial-gradient(circle, var(--accent-orange) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--animation-speed);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.piece-glow:hover::before {
+  opacity: 0.3;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+
+.square-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, var(--accent-green) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--animation-speed);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+}
+
+.square-highlight.possible-move {
+  background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 70%);
+  opacity: 0.4;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.square-highlight.last-move {
+  background: radial-gradient(circle, var(--accent-orange) 0%, transparent 70%);
+  opacity: 0.3;
+}
+
+.square-highlight.check {
+  background: radial-gradient(circle, #ff5555 0%, transparent 70%);
+  opacity: 0.5;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+
+.ambient-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.1;
+}
+
+.ambient-glow::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(ellipse, var(--accent-orange) 0%, transparent 70%);
+  animation: drift 20s ease-in-out infinite;
+}
+
+.ambient-glow::after {
+  content: '';
+  position: absolute;
+  top: 40%;
+  right: 20%;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(ellipse, var(--accent-pink) 0%, transparent 70%);
+  animation: floatReverse 25s ease-in-out infinite;
+}
+
+
+.analysis-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.analysis-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: analysisFloat 3s ease-in-out infinite;
+}
+
+@keyframes analysisFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 1;
+  }
+}
+
+.analysis-particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.analysis-particle:nth-child(2) { left: 30%; animation-delay: 0.5s; }
+.analysis-particle:nth-child(3) { left: 50%; animation-delay: 1s; }
+.analysis-particle:nth-child(4) { left: 70%; animation-delay: 1.5s; }
+.analysis-particle:nth-child(5) { left: 90%; animation-delay: 2s; }
+
+
+.warning-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.warning-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ff5555;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: warningPulse 1s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+}
+
+.warning-particle:nth-child(1) { top: 20%; left: 20%; animation-delay: 0s; }
+.warning-particle:nth-child(2) { top: 30%; right: 20%; animation-delay: 0.2s; }
+.warning-particle:nth-child(3) { bottom: 20%; left: 30%; animation-delay: 0.4s; }
+.warning-particle:nth-child(4) { bottom: 30%; right: 30%; animation-delay: 0.6s; }
+
+
+.success-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.success-particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  animation: celebrate 2s ease-out forwards;
+}
+
+@keyframes celebrate {
+  0% {
+    opacity: 1;
+    transform: scale(0) translateY(0);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1) translateY(-30px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-60px);
+  }
+}
+
+
+.particles-low .particle:nth-child(n+6) { display: none; }
+.particles-medium .particle:nth-child(n+11) { display: none; }
+.particles-high .particle { display: block; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .particle,
+  .particle-line,
+  .sparkle,
+  .burst-particle,
+  .analysis-particle,
+  .warning-particle,
+  .success-particle {
+    animation: none;
+    opacity: 0;
+  }
+  
+  .ambient-glow {
+    display: none;
+  }
+}

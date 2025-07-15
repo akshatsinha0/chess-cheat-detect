@@ -17,6 +17,8 @@ from src.core.stockfish_engine import analyze_position
 from src.ml.anomaly_detector import AnomalyDetector
 from src.detection.board_detector import BoardDetector
 from config import MODEL_FILE, SUSPICION_THRESHOLD
+import mysql.connector
+import uuid
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -25,8 +27,41 @@ board_detector = None
 current_game = chess.Board()
 move_history = []
 analysis_results = []
+current_game_id = None
 
 STOCKFISH_PATH = os.path.abspath("bin/stockfish/stockfish-windows-x86-64-avx2.exe")  # Adjust for your OS
+
+# --- MySQL Connection ---
+def get_db_connection():
+    return mysql.connector.connect(
+        host=os.environ.get('MYSQL_HOST', 'localhost'),
+        port=int(os.environ.get('MYSQL_PORT', 3306)),
+        user=os.environ.get('MYSQL_USER', 'root'),
+        password=os.environ.get('MYSQL_PASSWORD', ''),
+        database=os.environ.get('MYSQL_DATABASE', 'chessdb')
+    )
+# --- MySQL Logging ---
+def log_move_to_db(game_id, move_uci, fen, best_move, evaluation, suspicion_score):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('''CREATE TABLE IF NOT EXISTS moves (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            game_id VARCHAR(64),
+            move_uci VARCHAR(16),
+            fen TEXT,
+            best_move VARCHAR(16),
+            evaluation VARCHAR(64),
+            suspicion_score FLOAT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )''')
+        cur.execute('''INSERT INTO moves (game_id, move_uci, fen, best_move, evaluation, suspicion_score) VALUES (%s, %s, %s, %s, %s, %s)''',
+            (game_id, move_uci, fen, best_move, str(evaluation), suspicion_score))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        pass
 
 def analyze_pgn_moves(pgn_string):
     game = chess.pgn.read_game(io.StringIO(pgn_string))
@@ -71,14 +106,15 @@ def index():
     return render_template('index.html')
 @app.route('/api/new_game', methods=['POST'])
 def new_game():
-    global current_game, move_history, analysis_results
+    global current_game, move_history, analysis_results, current_game_id
     current_game = chess.Board()
     move_history = []
     analysis_results = []
+    current_game_id = str(uuid.uuid4())
     return jsonify({'status': 'success','fen': current_game.fen(),'board_svg': chess.svg.board(current_game)})
 @app.route('/api/make_move', methods=['POST'])
 def make_move():
-    global current_game, move_history
+    global current_game, move_history, analysis_results, current_game_id
     data = request.json
     move_uci = data.get('move')
     try:
@@ -89,6 +125,7 @@ def make_move():
             analysis = analyze_position(current_game.fen())
             suspicion_score = anomaly_detector.predict_suspicion(current_game.fen(), analysis['best_move'], analysis['evaluation'])
             analysis_results.append({'move': move_uci,'best_move': analysis['best_move'],'evaluation': analysis['evaluation'],'suspicion_score': suspicion_score})
+            log_move_to_db(current_game_id, move_uci, current_game.fen(), analysis['best_move'], analysis['evaluation'], suspicion_score)
             socketio.emit('move_made', {'fen': current_game.fen(),'move': move_uci,'analysis': analysis_results[-1]})
             return jsonify({'status': 'success','fen': current_game.fen(),'board_svg': chess.svg.board(current_game),'analysis': analysis_results[-1]})
         else:

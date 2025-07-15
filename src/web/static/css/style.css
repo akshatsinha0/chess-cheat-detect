@@ -1,12 +1,21 @@
+@import url('enhancements/variables.css');
+@import url('enhancements/animations.css');
+@import url('enhancements/components.css');
+@import url('enhancements/particles.css');
+@import url('enhancements/interactions.css');
+@import url('enhancements/layout.css');
+
 body {
-    background: #181a20;
+    background: var(--primary-bg);
     min-height: 100vh;
     background-image:
-        radial-gradient(circle at top left, #ffb86c 0%, transparent 60%),
-        radial-gradient(circle at top right, #ff79c6 0%, transparent 60%),
-        radial-gradient(circle at bottom left, #50fa7b 0%, transparent 60%),
-        radial-gradient(circle at bottom right, #8be9fd 0%, transparent 60%);
-    color: #f8f8f2;
+        radial-gradient(circle at top left, var(--accent-orange) 0%, transparent 60%),
+        radial-gradient(circle at top right, var(--accent-pink) 0%, transparent 60%),
+        radial-gradient(circle at bottom left, var(--accent-green) 0%, transparent 60%),
+        radial-gradient(circle at bottom right, var(--accent-cyan) 0%, transparent 60%);
+    color: var(--text-primary);
+    position: relative;
+    overflow-x: hidden;
 }
 .card, .navbar, .modal-content, .table, .form-control, .btn {
     background-color: #23272f !important;
@@ -21,24 +30,87 @@ body {
     border-color: #44475a !important;
 }
 #board {
-    border: 2px solid #44475a;
-    border-radius: 16px;
-    box-shadow: 0 4px 32px 0 rgba(0,0,0,0.5);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--depth-shadow);
+    transition: all var(--animation-speed) var(--smooth-ease);
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-chessboard {
+    position: relative;
+}
+
+.enhanced-chessboard::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-lg);
+    opacity: 0;
+    transition: opacity var(--animation-speed);
+    z-index: -1;
+}
+
+.enhanced-chessboard:hover::before {
+    opacity: 0.3;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+#board:hover {
+    box-shadow: var(--depth-shadow-heavy);
+    transform: var(--hover-lift);
 }
 .btn-primary {
-    background: linear-gradient(90deg, #ffb86c, #ff79c6);
+    background: var(--gradient-primary);
     border: none;
-    color: #181a20 !important;
+    color: var(--primary-bg) !important;
+    transition: all var(--animation-speed) var(--smooth-ease);
+    box-shadow: var(--depth-shadow-light);
+    position: relative;
+    overflow: hidden;
 }
+
+.btn-primary:hover {
+    transform: var(--hover-lift);
+    box-shadow: var(--depth-shadow);
+    filter: brightness(1.1);
+}
+
 .btn-secondary {
-    background: linear-gradient(90deg, #50fa7b, #8be9fd);
+    background: var(--gradient-secondary);
     border: none;
-    color: #181a20 !important;
+    color: var(--primary-bg) !important;
+    transition: all var(--animation-speed) var(--smooth-ease);
+    box-shadow: var(--depth-shadow-light);
+    position: relative;
+    overflow: hidden;
 }
+
+.btn-secondary:hover {
+    transform: var(--hover-lift);
+    box-shadow: var(--depth-shadow);
+    filter: brightness(1.1);
+}
+
 .btn-info {
-    background: linear-gradient(90deg, #8be9fd, #ffb86c);
+    background: var(--gradient-tertiary);
     border: none;
-    color: #181a20 !important;
+    color: var(--primary-bg) !important;
+    transition: all var(--animation-speed) var(--smooth-ease);
+    box-shadow: var(--depth-shadow-light);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-info:hover {
+    transform: var(--hover-lift);
+    box-shadow: var(--depth-shadow);
+    filter: brightness(1.1);
 }
 input.form-control, textarea.form-control {
     background: #23272f;
@@ -52,19 +124,48 @@ footer {
 .animated-btn {
     position: relative;
     overflow: hidden;
+    transition: all var(--animation-speed) var(--elastic-ease);
+    border-radius: var(--radius-md);
+    box-shadow: var(--depth-shadow-light);
 }
-.animated-btn .btn-text {
-    display: inline-block;
-    transition: transform 0.35s cubic-bezier(0.77,0,0.175,1);
-    will-change: transform;
-    position: relative;
+
+.animated-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s var(--smooth-ease);
     z-index: 1;
 }
-.animated-btn:hover .btn-text, .animated-btn:focus .btn-text {
-    animation: btnTextHoverUpDown 0.6s cubic-bezier(0.77,0,0.175,1) forwards;
+
+.animated-btn:hover::before {
+    left: 100%;
 }
+
+.animated-btn:hover {
+    transform: var(--hover-lift) scale(1.02);
+    box-shadow: var(--depth-shadow);
+    filter: brightness(1.1);
+    animation: morphShape 2s ease-in-out infinite;
+}
+
+.animated-btn .btn-text {
+    display: inline-block;
+    transition: transform 0.35s var(--elastic-ease);
+    will-change: transform;
+    position: relative;
+    z-index: 2;
+}
+
+.animated-btn:hover .btn-text, .animated-btn:focus .btn-text {
+    animation: btnTextHoverUpDown 0.6s var(--elastic-ease) forwards;
+}
+
 .animated-btn .btn-text.reverse-anim {
-    animation: btnTextHoverDownUp 0.6s cubic-bezier(0.77,0,0.175,1) forwards;
+    animation: btnTextHoverDownUp 0.6s var(--elastic-ease) forwards;
 }
 @keyframes btnTextHoverUpDown {
     0% {
