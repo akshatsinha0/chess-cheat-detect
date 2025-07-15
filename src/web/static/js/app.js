@@ -6,6 +6,7 @@ let moveHistoryPairs = [];
 let pgnMoves = [];
 let currentMoveIndex = 0;
 let pgnBaseFen = null;
+let lastMove = null; // Track the last move for arrow indicator
 $(document).ready(function() {
     $.post('/api/new_game', function(response) {
         if (response.status === 'success') {
@@ -417,6 +418,8 @@ function onDrop(source, target) {
                 updateCurrentAnalysis(response.analysis);
                 addMoveToHistory(move.san, response.analysis);
                 syncMoveHistoryFromGame();
+                // Show last move arrow
+                updateLastMoveDisplay({ from: source, to: target });
             }
         },
         error: function(error) {
@@ -573,6 +576,8 @@ function newGame() {
             renderMoveHistoryTable();
             updateStatus();
             syncMoveHistoryFromGame();
+            // Hide last move arrow for new game
+            hideLastMoveArrow();
         }
     });
 }
@@ -917,4 +922,83 @@ function syncMoveHistoryFromGame() {
     pgnMoves = game.history({ verbose: true });
     pgnBaseFen = new Chess().fen();
     currentMoveIndex = pgnMoves.length;
+}
+
+// Last Move Arrow Functions
+function showLastMoveArrow(fromSquare, toSquare) {
+    // Remove any existing arrow
+    hideLastMoveArrow();
+    
+    // Get board container and square positions
+    const boardContainer = $('#board');
+    const fromElement = $(`[data-square="${fromSquare}"]`);
+    const toElement = $(`[data-square="${toSquare}"]`);
+    
+    if (fromElement.length === 0 || toElement.length === 0) return;
+    
+    // Calculate positions relative to board
+    const boardRect = boardContainer[0].getBoundingClientRect();
+    const fromRect = fromElement[0].getBoundingClientRect();
+    const toRect = toElement[0].getBoundingClientRect();
+    
+    const fromX = fromRect.left - boardRect.left + fromRect.width / 2;
+    const fromY = fromRect.top - boardRect.top + fromRect.height / 2;
+    const toX = toRect.left - boardRect.left + toRect.width / 2;
+    const toY = toRect.top - boardRect.top + toRect.height / 2;
+    
+    // Calculate arrow angle and length
+    const deltaX = toX - fromX;
+    const deltaY = toY - fromY;
+    const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+    const length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    // Create arrow SVG
+    const arrowSvg = `
+        <svg width="${length + 20}" height="60" style="position: absolute; left: ${fromX - 10}px; top: ${fromY - 30}px; transform: rotate(${angle}deg); transform-origin: 10px 30px;">
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon class="arrow-head" points="0 0, 10 3.5, 0 7" />
+                </marker>
+            </defs>
+            <line class="arrow-glow" x1="10" y1="30" x2="${length}" y2="30" />
+            <line class="arrow-line" x1="10" y1="30" x2="${length}" y2="30" marker-end="url(#arrowhead)" />
+        </svg>
+    `;
+    
+    // Add arrow to board
+    const $arrow = $(`<div class="last-move-arrow">${arrowSvg}</div>`);
+    boardContainer.append($arrow);
+    
+    // Add square highlights
+    fromElement.addClass('last-move-from');
+    toElement.addClass('last-move-to');
+    
+    // Animate arrow appearance
+    setTimeout(() => {
+        $arrow.addClass('visible');
+    }, 50);
+    
+    // Store last move info
+    lastMove = { from: fromSquare, to: toSquare };
+}
+
+function hideLastMoveArrow() {
+    $('.last-move-arrow').removeClass('visible');
+    setTimeout(() => {
+        $('.last-move-arrow').remove();
+    }, 300);
+    
+    // Remove square highlights
+    $('.last-move-from').removeClass('last-move-from');
+    $('.last-move-to').removeClass('last-move-to');
+    
+    lastMove = null;
+}
+
+function updateLastMoveDisplay(move) {
+    if (move && move.from && move.to) {
+        showLastMoveArrow(move.from, move.to);
+    } else {
+        hideLastMoveArrow();
+    }
 }
