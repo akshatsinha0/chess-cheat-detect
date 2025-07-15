@@ -358,6 +358,7 @@ function initSocket() {
         board.position(data.fen);
         updateCurrentAnalysis(data.analysis);
         addMoveToHistory(data.move, data.analysis);
+        updateLastMoveDisplay({from:data.move.substring(0,2),to:data.move.substring(2,4)});
     });
     socket.on('analysis_result', function(data) {
         updateCurrentAnalysis(data);
@@ -678,6 +679,7 @@ function applyFEN() {
             renderMoveHistoryTable();
             updateStatus();
             showAlert('FEN applied to board.', 'success');
+            updateLastMoveDisplay(null);
         } else {
             showAlert('Invalid FEN string.', 'danger');
         }
@@ -695,6 +697,12 @@ function applyPGN() {
             updateMoveListForPGN();
             updateStatus();
             showAlert('PGN applied to board.', 'success');
+            if (pgnMoves.length > 0) {
+                const move = pgnMoves[pgnMoves.length - 1];
+                updateLastMoveDisplay({ from: move.from, to: move.to });
+            } else {
+                updateLastMoveDisplay(null);
+            }
         } else {
             showAlert('Invalid PGN string.', 'danger');
         }
@@ -729,6 +737,12 @@ function prevMove() {
         updateMoveListForPGN();
         updateStatus();
         playSound('move');
+        if (pgnMoves.length > 0 && currentMoveIndex > 0) {
+            const move = pgnMoves[currentMoveIndex - 1];
+            updateLastMoveDisplay({ from: move.from, to: move.to });
+        } else {
+            updateLastMoveDisplay(null);
+        }
     }
 }
 function nextMove() {
@@ -743,6 +757,12 @@ function nextMove() {
         updateMoveListForPGN();
         updateStatus();
         playSound('move');
+        if (pgnMoves.length > 0 && currentMoveIndex > 0) {
+            const move = pgnMoves[currentMoveIndex - 1];
+            updateLastMoveDisplay({ from: move.from, to: move.to });
+        } else {
+            updateLastMoveDisplay(null);
+        }
     }
 }
 function goToStart() {
@@ -753,6 +773,7 @@ function goToStart() {
     updateMoveListForPGN();
     updateStatus();
     playSound('move');
+    updateLastMoveDisplay(null);
 }
 function goToEnd() {
     currentMoveIndex = pgnMoves.length;
@@ -765,6 +786,12 @@ function goToEnd() {
     updateMoveListForPGN();
     updateStatus();
     playSound('move');
+    if (pgnMoves.length > 0 && currentMoveIndex > 0) {
+        const move = pgnMoves[currentMoveIndex - 1];
+        updateLastMoveDisplay({ from: move.from, to: move.to });
+    } else {
+        updateLastMoveDisplay(null);
+    }
 }
 
 document.addEventListener('keydown', function(e) {

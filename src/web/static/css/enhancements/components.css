@@ -602,48 +602,7 @@
 }
 
 /* Last Move Arrow Indicator */
-.last-move-arrow {
-  position: absolute;
-  pointer-events: none;
-  z-index: 10;
-  opacity: 0;
-  transition: all var(--animation-speed-slow) var(--elastic-ease);
-}
-
-.last-move-arrow.visible {
-  opacity: 1;
-  animation: arrowPulse 2s ease-in-out infinite;
-}
-
-.last-move-arrow svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
-}
-
-.last-move-arrow .arrow-line {
-  stroke: var(--accent-orange);
-  stroke-width: 4;
-  stroke-linecap: round;
-  fill: none;
-  stroke-dasharray: 8, 4;
-  animation: arrowDash 2s linear infinite;
-}
-
-.last-move-arrow .arrow-head {
-  fill: var(--accent-orange);
-  stroke: var(--accent-orange);
-  stroke-width: 2;
-}
-
-.last-move-arrow .arrow-glow {
-  stroke: var(--accent-orange);
-  stroke-width: 8;
-  stroke-linecap: round;
-  fill: none;
-  opacity: 0.3;
-  filter: blur(2px);
-}
+.last-move-arrow{position:absolute;pointer-events:none;z-index:9999;opacity:1!important;}.last-move-arrow.visible{opacity:1!important;}.last-move-arrow svg{display:block;overflow:visible;}.last-move-arrow .arrow-line{stroke:#ffd600;stroke-width:8;opacity:1;}.last-move-arrow .arrow-head{fill:#ffd600;}.last-move-arrow .arrow-glow{stroke:#00bfff;stroke-width:16;opacity:.4;filter:blur(2px);}.last-move-from,.last-move-to{background:#ffe066!important;box-shadow:0 0 10px 2px #ffd600!important;z-index:10000!important;}
 
 @keyframes arrowPulse {
   0%, 100% {
