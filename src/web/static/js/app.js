@@ -35,7 +35,10 @@ function initBoard() {
     const config = {
         draggable: true,
         position: 'start',
-        pieceTheme: 'https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png',
+        pieceTheme: function(piece) {
+            // piece is like 'wK', 'bQ', etc.
+            return '/static/img/' + piece + '.svg';
+        },
         onDragStart: onDragStart,
         onDrop: onDrop,
         onSnapEnd: onSnapEnd
@@ -63,6 +66,21 @@ function onDragStart(source, piece, position, orientation) {
         return false;
     }
 }
+// --- Sound Effects ---
+const sounds = {
+    move: new Audio('http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-self.mp3'),
+    castle: new Audio('https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/castle.mp3'),
+    capture: new Audio('http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/capture.mp3'),
+    check: new Audio('https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-check.mp3'),
+    promote: new Audio('https://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/promote.mp3')
+};
+function playSound(type) {
+    if (sounds[type]) {
+        sounds[type].currentTime = 0;
+        sounds[type].play();
+    }
+}
+// --- Enhanced onDrop with sound ---
 function onDrop(source, target) {
     const move = game.move({
         from: source,
@@ -70,6 +88,19 @@ function onDrop(source, target) {
         promotion: 'q'
     });
     if (move === null) return 'snapback';
+    // Determine sound type
+    let soundType = 'move';
+    if (move.flags.includes('c')) soundType = 'capture';
+    if (move.flags.includes('k') || move.flags.includes('q')) soundType = 'castle';
+    if (move.flags.includes('p')) soundType = 'promote';
+    // Check for check
+    setTimeout(() => {
+        if (game.in_check()) {
+            playSound('check');
+        } else {
+            playSound(soundType);
+        }
+    }, 10);
     $.ajax({
         url: '/api/make_move',
         type: 'POST',
@@ -82,6 +113,7 @@ function onDrop(source, target) {
                 updateStatus();
                 updateCurrentAnalysis(response.analysis);
                 addMoveToHistory(move.san, response.analysis);
+                syncMoveHistoryFromGame();
             }
         },
         error: function(error) {
@@ -218,6 +250,7 @@ function newGame() {
             moveHistoryPairs = [];
             renderMoveHistoryTable();
             updateStatus();
+            syncMoveHistoryFromGame();
         }
     });
 }
@@ -356,6 +389,7 @@ function updateMoveListForPGN() {
     }
     renderMoveHistoryTable();
 }
+// --- Navigation Sounds and Functions ---
 function prevMove() {
     if (currentMoveIndex > 0) {
         currentMoveIndex--;
@@ -367,6 +401,7 @@ function prevMove() {
         game.load(tempGame.fen());
         updateMoveListForPGN();
         updateStatus();
+        playSound('move');
     }
 }
 function nextMove() {
@@ -380,8 +415,40 @@ function nextMove() {
         game.load(tempGame.fen());
         updateMoveListForPGN();
         updateStatus();
+        playSound('move');
     }
 }
+function goToStart() {
+    currentMoveIndex = 0;
+    let tempGame = new Chess(pgnBaseFen);
+    board.position(tempGame.fen());
+    game.load(tempGame.fen());
+    updateMoveListForPGN();
+    updateStatus();
+    playSound('move');
+}
+function goToEnd() {
+    currentMoveIndex = pgnMoves.length;
+    let tempGame = new Chess(pgnBaseFen);
+    for (let i = 0; i < currentMoveIndex; i++) {
+        tempGame.move(pgnMoves[i]);
+    }
+    board.position(tempGame.fen());
+    game.load(tempGame.fen());
+    updateMoveListForPGN();
+    updateStatus();
+    playSound('move');
+}
+// --- Keyboard Navigation ---
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowLeft') {
+        prevMove();
+        e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+        nextMove();
+        e.preventDefault();
+    }
+});
 function flipBoard() {
     board.flip();
 }
@@ -397,4 +464,98 @@ function showAlert(message, type = 'info', duration = 5000) {
     setTimeout(() => {
         alertElement.alert('close');
     }, duration);
+}
+
+// --- Sidebar Logic ---
+function openSidebar(title, html) {
+    $('#sidebar-title').text(title);
+    $('#sidebar-content').html(html);
+    $('#sidebar-overlay').addClass('open');
+    $('#sidebar').addClass('open');
+}
+function closeSidebar() {
+    $('#sidebar-overlay').removeClass('open');
+    $('#sidebar').removeClass('open');
+}
+$('#sidebar-overlay').on('click', function(e) {
+    if (e.target === this) closeSidebar();
+});
+// --- Updated Analyze PGN Button Logic ---
+$(document).ready(function() {
+    $('#analyzePgnBtn').off('click').on('click', function() {
+        const pgn = $('#analyzePgnInput').val();
+        if (!pgn.trim()) {
+            showAlert('Please paste a PGN for analysis.', 'warning');
+            return;
+        }
+        openSidebar('PGN Analysis', '<span class="text-info">Analyzing PGN...</span>');
+        $.ajax({
+            url: '/analyze_pgn',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ pgn }),
+            success: function(data) {
+                if (data.success) {
+                    let html = "<b>Move-by-move analysis:</b><br><table class='table table-sm'><tr><th>#</th><th>Move</th><th>Best Move</th><th>Eval</th><th>CPL</th></tr>";
+                    data.analysis.forEach((move, idx) => {
+                        html += `<tr>
+                            <td>${idx+1}</td>
+                            <td>${move.move}</td>
+                            <td>${move.best_move}</td>
+                            <td>${move.eval}</td>
+                            <td>${move.centipawn_loss}</td>
+                        </tr>`;
+                    });
+                    html += "</table>";
+                    openSidebar('PGN Analysis', html);
+                } else {
+                    openSidebar('PGN Analysis', '<span class="text-danger">' + data.error + '</span>');
+                }
+            },
+            error: function(xhr) {
+                openSidebar('PGN Analysis', '<span class="text-danger">Error analyzing PGN.</span>');
+            }
+        });
+    });
+    // --- Updated Detect Cheat Button Logic ---
+    $(".btn-primary.animated-btn:contains('Detect Cheat')").off('click').on('click', function() {
+        let pgn = $('#analyzePgnInput').val().trim() || $('#pgnInput').val().trim();
+        if (!pgn) {
+            showAlert('Please paste a PGN for cheat detection.', 'warning');
+            return;
+        }
+        openSidebar('Cheat Detection', '<span class="text-info">Detecting cheat...</span>');
+        $.ajax({
+            url: '/detect_cheat',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ pgn }),
+            success: function(data) {
+                if (data.success) {
+                    let r = data.cheat_result;
+                    let verdict = r.is_suspicious ? "<span class='text-danger fw-bold'>Suspicious Play Detected!</span>" : "<span class='text-success fw-bold'>No Cheating Detected</span>";
+                    let html = `
+                        <b>Cheat Detection Result:</b><br>
+                        ${verdict}<br>
+                        <b>Engine Match Ratio:</b> ${(r.match_ratio*100).toFixed(1)}%<br>
+                        <b>Average Centipawn Loss:</b> ${r.avg_centipawn_loss.toFixed(1)}<br>
+                        <b>Cheat Score:</b> ${r.cheat_score.toFixed(2)}
+                    `;
+                    openSidebar('Cheat Detection', html);
+                } else {
+                    openSidebar('Cheat Detection', '<span class="text-danger">' + data.error + '</span>');
+                }
+            },
+            error: function(xhr) {
+                openSidebar('Cheat Detection', '<span class="text-danger">Error detecting cheat.</span>');
+            }
+        });
+    });
+});
+// --- End of new features ---
+
+function syncMoveHistoryFromGame() {
+    pgnMoves = game.history({ verbose: true });
+    pgnBaseFen = new Chess().fen();
+    currentMoveIndex = pgnMoves.length;
 }

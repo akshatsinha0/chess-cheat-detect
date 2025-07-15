@@ -116,3 +116,61 @@ footer {
         opacity: 1;
     }
 }
+/* Sidebar for analysis/cheat detection */
+#sidebar-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 100vh;
+    background: rgba(24,26,32,0.7);
+    z-index: 2000;
+    transition: width 0.4s cubic-bezier(0.77,0,0.175,1);
+    overflow: hidden;
+}
+#sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 400px;
+    max-width: 90vw;
+    height: 100vh;
+    background: #23272f;
+    color: #f8f8f2;
+    box-shadow: -4px 0 32px 0 rgba(0,0,0,0.5);
+    border-left: 2px solid #44475a;
+    transition: transform 0.4s cubic-bezier(0.77,0,0.175,1);
+    transform: translateX(100%);
+    display: flex;
+    flex-direction: column;
+}
+#sidebar.open {
+    transform: translateX(0);
+}
+#sidebar-overlay.open {
+    width: 100vw;
+}
+#sidebar .sidebar-header {
+    padding: 1.2rem 1.5rem 1rem 1.5rem;
+    background: rgba(40, 42, 54, 0.95);
+    border-bottom: 1px solid #44475a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#sidebar .sidebar-content {
+    padding: 1.5rem;
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+#sidebar .close-btn {
+    background: none;
+    border: none;
+    color: #f8f8f2;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+#sidebar .close-btn:hover {
+    color: #ff79c6;
+}

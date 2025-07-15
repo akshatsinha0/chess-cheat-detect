@@ -25,6 +25,47 @@ board_detector = None
 current_game = chess.Board()
 move_history = []
 analysis_results = []
+
+STOCKFISH_PATH = os.path.abspath("bin/stockfish/stockfish-windows-x86-64-avx2.exe")  # Adjust for your OS
+
+def analyze_pgn_moves(pgn_string):
+    game = chess.pgn.read_game(io.StringIO(pgn_string))
+    board = game.board()
+    analysis = []
+    with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
+        for move in game.mainline_moves():
+            info = engine.analyse(board, chess.engine.Limit(time=0.1))
+            best_move = info["pv"][0]
+            eval_cp = info["score"].relative.score(mate_score=10000)
+            played_move = board.san(move)
+            best_move_san = board.san(best_move)
+            centipawn_loss = abs(eval_cp) if played_move != best_move_san else 0
+            analysis.append({
+                "move": played_move,
+                "best_move": best_move_san,
+                "eval": eval_cp,
+                "centipawn_loss": centipawn_loss
+            })
+            board.push(move)
+    return analysis
+
+def cheat_score(analysis):
+    total_moves = len(analysis)
+    if total_moves == 0:
+        return {"cheat_score": 0, "is_suspicious": False}
+    matches = sum(1 for move in analysis if move["move"] == move["best_move"])
+    match_ratio = matches / total_moves
+    avg_cpl = sum(move["centipawn_loss"] for move in analysis) / total_moves
+    is_suspicious = match_ratio > 0.8 and avg_cpl < 30
+    return {
+        "total_moves": total_moves,
+        "engine_matches": matches,
+        "match_ratio": match_ratio,
+        "avg_centipawn_loss": avg_cpl,
+        "cheat_score": match_ratio * (100 - avg_cpl),
+        "is_suspicious": is_suspicious
+    }
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -106,6 +147,24 @@ def capture_board():
         return jsonify({'status': 'success','fen': fen,'image': f'data:image/jpeg;base64,{frame_base64}'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 400
+@app.route('/analyze_pgn', methods=['POST'])
+def analyze_pgn():
+    pgn = request.json.get('pgn')
+    try:
+        analysis = analyze_pgn_moves(pgn)
+        return jsonify({"success": True, "analysis": analysis})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+@app.route('/detect_cheat', methods=['POST'])
+def detect_cheat():
+    pgn = request.json.get('pgn')
+    try:
+        analysis = analyze_pgn_moves(pgn)
+        cheat_result = cheat_score(analysis)
+        return jsonify({"success": True, "cheat_result": cheat_result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 @socketio.on('connect')
 def handle_connect():
     emit('connected', {'message': 'Connected to chess cheat detection server'})
