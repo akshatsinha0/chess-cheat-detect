@@ -138,15 +138,34 @@ def import_pgn():
 def capture_board():
     global board_detector
     try:
-        if board_detector is None:
-            board_detector = BoardDetector(camera_index=0)
-        frame = board_detector.capture_frame()
+        # If an image file is uploaded, use it
+        if 'image' in request.files:
+            file = request.files['image']
+            file_bytes = np.frombuffer(file.read(), np.uint8)
+            frame = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+            if frame is None:
+                return jsonify({'status': 'error', 'message': 'Invalid image file.'}), 400
+        else:
+            # Try multiple camera indices
+            frame = None
+            for idx in range(4):
+                try:
+                    if board_detector is None:
+                        board_detector = BoardDetector(camera_index=idx)
+                    frame = board_detector.capture_frame()
+                    if frame is not None:
+                        break
+                except Exception:
+                    board_detector = None
+                    continue
+            if frame is None:
+                return jsonify({'status': 'error', 'message': 'No accessible camera found or failed to capture frame.'}), 400
         fen = board_detector.get_fen_from_image(frame)
         _, buffer = cv2.imencode('.jpg', frame)
         frame_base64 = base64.b64encode(buffer).decode('utf-8')
         return jsonify({'status': 'success','fen': fen,'image': f'data:image/jpeg;base64,{frame_base64}'})
     except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 400
+        return jsonify({'status': 'error', 'message': f'Capture failed: {str(e)}'}), 400
 @app.route('/analyze_pgn', methods=['POST'])
 def analyze_pgn():
     pgn = request.json.get('pgn')
