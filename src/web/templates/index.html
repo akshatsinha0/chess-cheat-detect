@@ -10,9 +10,108 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sunuwar&display=swap" rel="stylesheet">
-    <style>body{font-family:'Noto Sans Sunuwar',sans-serif;font-weight:400;font-style:normal;}</style>
+    <style>
+        body{font-family:'Noto Sans Sunuwar',sans-serif;font-weight:400;font-style:normal;}
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #2a2b3d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        body.loading {
+            overflow: hidden;
+        }
+        
+        html.loading {
+            overflow: hidden;
+        }
+        
+        .loader-icon {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .rotating-arrows {
+            animation: rotateArrows 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+            transform-origin: center center;
+        }
+        
+        @keyframes rotateArrows {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* can work for like-Pulse effect for the arrows */
+        .rotating-arrows path {
+            animation: arrowPulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes arrowPulse {
+            0%, 100% {
+                opacity: 1;
+                stroke-width: 4;
+            }
+            50% {
+                opacity: 0.8;
+                stroke-width: 3;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader-icon">
+            <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                <g class="rotating-arrows">
+                    <!-- First curved arrow -->
+                    <path d="M 20 40 Q 20 20, 40 20 T 60 40" 
+                          stroke="#667eea" 
+                          stroke-width="4" 
+                          fill="none" 
+                          stroke-linecap="round"/>
+                    <path d="M 57 36 L 60 40 L 64 37" 
+                          stroke="#667eea" 
+                          stroke-width="4" 
+                          fill="none" 
+                          stroke-linecap="round" 
+                          stroke-linejoin="round"/>
+                    
+                    <!-- Second curved arrow -->
+                    <path d="M 60 40 Q 60 60, 40 60 T 20 40" 
+                          stroke="#764ba2" 
+                          stroke-width="4" 
+                          fill="none" 
+                          stroke-linecap="round"/>
+                    <path d="M 23 44 L 20 40 L 16 43" 
+                          stroke="#764ba2" 
+                          stroke-width="4" 
+                          fill="none" 
+                          stroke-linecap="round" 
+                          stroke-linejoin="round"/>
+                </g>
+            </svg>
+        </div>
+    </div>
     <nav class="navbar navbar-dark bg-dark">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1">Chess Cheat Detection System</span>
@@ -172,5 +271,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chess.js@0.12.0/chess.min.js"></script>
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded',function(){const o=document.getElementById('loading-overlay');document.body.classList.add('loading');document.documentElement.classList.add('loading');setTimeout(function(){o.classList.add('hidden');document.body.classList.remove('loading');document.documentElement.classList.remove('loading')},1500);window.addEventListener('beforeunload',function(){o.classList.remove('hidden');document.body.classList.add('loading');document.documentElement.classList.add('loading')});window.addEventListener('pagehide',function(){o.classList.remove('hidden');document.body.classList.add('loading');document.documentElement.classList.add('loading')})});
+        window.addEventListener('load',function(){const o=document.getElementById('loading-overlay');if(performance&&performance.navigation&&performance.navigation.type===1){o.classList.remove('hidden');document.body.classList.add('loading');document.documentElement.classList.add('loading');setTimeout(function(){o.classList.add('hidden');document.body.classList.remove('loading');document.documentElement.classList.remove('loading')},1500)}});
+    </script>
 </body>
 </html>
